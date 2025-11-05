@@ -1,0 +1,10 @@
+{
+  "name": "Carrom Board Game",
+  "description": "Full-featured, mobile-optimized carrom board game for friends, built in React/TypeScript.",
+  "appUrl": "https://carrom-game-web.vercel.app/",
+  "icon": "https://carrom-game-web.vercel.app/icon.png",
+  "requestedPermissions": [],
+  "categories": ["game", "entertainment"],
+  "author": "Zafor Iqbal",
+  "version": "1.0.0"
+}
