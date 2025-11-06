@@ -332,17 +332,6 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.57.1.tgz"
   integrity sha512-d9zaMRSTIKDLhctzH12MtXvJKSSUhaHcjV+2Z+GK+EEY7XKpP5yR4x+N3TAcHTcu963nIr+TMcCb4DBCYX1z6Q==
 
-"@farcaster/frame-sdk@^0.1.12":
-  version "0.1.12"
-  resolved "https://registry.npmjs.org/@farcaster/frame-sdk/-/frame-sdk-0.1.12.tgz"
-  integrity sha512-qlikvkxsrsvKGutr3PM3Yvsuni2Fku15aPagrCyHZWbYAJrZ4mRJM6u9S8eLAXMMnYd9gJ9yor6COYgmZMBOgQ==
-  dependencies:
-    "@farcaster/miniapp-sdk" "0.2.1"
-    "@farcaster/quick-auth" "0.0.8"
-    comlink "^4.4.2"
-    eventemitter3 "^5.0.1"
-    ox "^0.4.4"
-
 "@farcaster/miniapp-core@0.4.1":
   version "0.4.1"
   resolved "https://registry.npmjs.org/@farcaster/miniapp-core/-/miniapp-core-0.4.1.tgz"
@@ -352,7 +341,7 @@
     ox "^0.4.4"
     zod "^3.25.0"
 
-"@farcaster/miniapp-sdk@0.2.1":
+"@farcaster/miniapp-sdk@^0.2.1":
   version "0.2.1"
   resolved "https://registry.npmjs.org/@farcaster/miniapp-sdk/-/miniapp-sdk-0.2.1.tgz"
   integrity sha512-2SnDeOtDdlN1lGQt7UyH2jkrZRQDOkmhcrlzNWazYChyPh9XfV8+9fMS+Lr/E2pEws9Q40Xl9POrCzdpUC19lg==
@@ -369,14 +358,6 @@
   integrity sha512-tiZndhpfDtEhaKlkmS5cVDuS+A/tafqZT3y9I44rC69m3beJok6e8dIH2JhxVy3EvOWTyTBnrmNn6GOOh+qK6A==
   dependencies:
     jose "^5.2.3"
-    zod "^3.25.1"
-
-"@farcaster/quick-auth@0.0.8":
-  version "0.0.8"
-  resolved "https://registry.npmjs.org/@farcaster/quick-auth/-/quick-auth-0.0.8.tgz"
-  integrity sha512-NRIq1BcbcQCC6xBF5owfckkY00xKQVpqhpLNl5rICVpl0xeDsiVbkenIrHaUuyjtCK2W28YVc2ZCFRyz9ERHKg==
-  dependencies:
-    jose "^5.8.0"
     zod "^3.25.1"
 
 "@humanwhocodes/config-array@^0.13.0":
@@ -1528,7 +1509,7 @@ jayson@^4.1.1:
     uuid "^8.3.2"
     ws "^7.5.10"
 
-jose@^5.2.3, jose@^5.8.0:
+jose@^5.2.3:
   version "5.10.0"
   resolved "https://registry.npmjs.org/jose/-/jose-5.10.0.tgz"
   integrity sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==

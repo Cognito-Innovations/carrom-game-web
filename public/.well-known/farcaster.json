@@ -1,10 +1,32 @@
 {
-  "name": "Carrom Board Game",
-  "description": "Full-featured, mobile-optimized carrom board game for friends, built in React/TypeScript.",
-  "appUrl": "https://carrom-game-web.vercel.app/",
-  "icon": "https://carrom-game-web.vercel.app/icon.png",
-  "requestedPermissions": [],
-  "categories": ["game", "entertainment"],
-  "author": "Zafor Iqbal",
-  "version": "1.0.0"
+  "accountAssociation": {
+    "header": "eyJmaWQiOjg1NTYzMiwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweGUzOWM5QjMyMjY3ZjFBYTZCNTBBQWFlMWVBRURBRDUwYTVjZjM1RDQifQ",
+    "payload": "eyJkb21haW4iOiJjYXJyb20tZ2FtZS13ZWIudmVyY2VsLmFwcCJ9",
+    "signature": "Ss3E1yDjciwP+5bNxGGA7JPCTBQlbeow2e5Mp/5L130qJthRHJE0Dzo9IuyUqeHhtMaAjEwhwUuZ51ONQV9eoBw="
+  },
+  "baseBuilder": {
+    "ownerAddress": "0x"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Carrom Board Game",
+    "homeUrl": "https://carrom-game-web.vercel.app/",
+    "iconUrl": "https://carrom-game-web.vercel.app/home.png",
+    "splashImageUrl": "https://carrom-game-web.vercel.app/home.png",
+    "splashBackgroundColor": "#000000",
+    "webhookUrl": "",
+    "subtitle": "Fast, fun, social",
+    "description": "A fast, fun way to challenge friends in real time in Carrom Board Game.",
+    "screenshotUrls": [
+      "https://carrom-game-web.vercel.app/home.png"
+    ],
+    "primaryCategory": "games",
+    "tags": ["carrom", "game", "miniapp", "baseapp"],
+    "heroImageUrl": "https://carrom-game-web.vercel.app/home.png",
+    "tagline": "Play instantly",
+    "ogTitle": "Carrom Board Game",
+    "ogDescription": "Challenge friends in real time in Carrom Board Game.",
+    "ogImageUrl": "https://carrom-game-web.vercel.app/home.png",
+    "noindex": false
+  }
 }

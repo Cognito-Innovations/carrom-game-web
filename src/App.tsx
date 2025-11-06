@@ -1,11 +1,13 @@
 import React, { useEffect } from 'react';
-import { sdk } from '@farcaster/frame-sdk';
+import { sdk } from '@farcaster/miniapp-sdk';
 import { Game } from './components/Game';
 import './App.css';
 
 function App() {
   useEffect(() => {
-    sdk.actions.ready();
+    (async () => {
+      await sdk.actions.ready();
+    })();
   }, []);
   return (
     <div className="App">
