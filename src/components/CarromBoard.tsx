@@ -127,7 +127,9 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
                     // This ensures proper angle calculation
                     const aimPoint = new Point(aiMove.aimX, aiMove.aimY);
                     const strikerPoint = new Point(aiMove.strikerX, aiMove.strikerY);
-                    const power = board.target.determinePower(strikerPoint, aimPoint);
+                    // Create a pullPoint that will make the shot go toward the aim point
+                    const pullPoint = new Point(2 * strikerPoint.x - aimPoint.x, 2 * strikerPoint.y - aimPoint.y);
+                    const power = board.target.determinePower(strikerPoint, pullPoint);
                     
                     // Apply the calculated power
                     board.striker.strike(power.x * 0.1, power.y * 0.1);
