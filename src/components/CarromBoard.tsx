@@ -130,9 +130,15 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
                     // Create a pullPoint that will make the shot go toward the aim point
                     const pullPoint = new Point(2 * strikerPoint.x - aimPoint.x, 2 * strikerPoint.y - aimPoint.y);
                     const power = board.target.determinePower(strikerPoint, pullPoint);
-                    
-                    // Apply the calculated power
-                    board.striker.strike(power.x * 0.1, power.y * 0.1);
+                    // Normalize direction and apply sensible strength
+                    const magnitude = Math.sqrt(power.x * power.x + power.y * power.y) || 1;
+                    const minStrength = 16;
+                    const maxStrength = 34;
+
+                    const strength = Math.min(maxStrength, Math.max(minStrength, power.d * 0.22));
+                    const normX = (power.x / magnitude) * strength;
+                    const normY = (power.y / magnitude) * strength;
+                    board.striker.strike(normX, normY);
                     board.state = 'third';
                     board.target.flag = false;
                   }, 500);
