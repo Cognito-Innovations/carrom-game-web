@@ -10,6 +10,23 @@ export class AI {
     this.util = new Util();
   }
 
+  // Checks if the path from p1 to p2 is blocked by any other gatti
+  private isPathClear(board: Board, p1: Point, p2: Point, excludeGatti: Gatti): boolean {
+    for (const gatti of board.gattis) {
+      if (gatti.type === 'striker' || gatti === excludeGatti) continue;
+      // Compute distance from gatti center to the line segment between p1 and p2
+      const t = Math.max(0, Math.min(1,
+        ((gatti.pos.x - p1.x)*(p2.x - p1.x) + (gatti.pos.y - p1.y)*(p2.y - p1.y)) /
+        ((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y))
+      ));
+      const closestX = p1.x + t * (p2.x - p1.x);
+      const closestY = p1.y + t * (p2.y - p1.y);
+      const dist = this.util.getDistance(gatti.pos, new Point(closestX, closestY));
+      if (dist < gatti.radius + 5) return false;
+    }
+    return true;
+  }
+
   // Find the best target to aim for
   findBestTarget(board: Board): { target: Gatti | null; power: { x: number; y: number } } {
     const striker = board.striker;
@@ -24,6 +41,9 @@ export class AI {
       // Check if this gatti can be aimed at a hole
       const distanceToStriker = this.util.getDistance(striker.pos, gatti.pos);
       if (distanceToStriker < 30 || distanceToStriker > 400) continue; // Skip if too close or too far
+
+      // Skip if path is blocked
+      if (!this.isPathClear(board, striker.pos, gatti.pos, gatti)) continue;
 
       // Calculate angle from striker to gatti
       const dx = gatti.pos.x - striker.pos.x;
