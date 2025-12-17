@@ -21,6 +21,18 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
   const [showToast, setShowToast] = useState(false);
   const aiRef = useRef<AI>(new AI());
   const aiMoveTimeoutRef = useRef<NodeJS.Timeout>();
+  const toastTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const showGameMessage = (msg: string) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    
+    toastTimeoutRef.current = setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
+  };
 
   useEffect(() => {
     if (!canvasRef.current || !backCanvasRef.current || !gameStarted) return;
@@ -39,6 +51,19 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
     const update = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      if (board.state !== 'first' && board.striker) {
+        board.striker.checkBoundary(canvas);
+        board.striker.checkInHoles(
+          board.holes, 
+          [],
+          board,
+          () => {
+            showGameMessage("⚠️ FOUL! Striker Pocketed");
+          }
+        );
+        board.striker.draw(ctx, board);
+      }
+
       for (let i = board.gattis.length - 1; i >= 0; i--) {
         const g = board.gattis[i];
         if (board.state !== 'first') {
@@ -50,6 +75,9 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
             board,
             (gatti, holeIndex) => {
               // Handle gatti pocketed
+              const currentPlayer = board.isPlayer1Turn() ? "Player 1" : "Computer";
+
+              showGameMessage(`Nice Shot! Second Chance 🎯`);
             }
           );
         }
@@ -68,10 +96,9 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
         if (board.isPlayer1Turn()) {
           // Player 1 (manual) - follow cursor
           const x = board.cursor.final.x;
-          const y = board.cursor.final.y;
           if (x > start && x < end) {
             board.striker.pos.x = x;
-            board.striker.pos.y = canvas.height - unit; // Bottom position
+            board.striker.pos.y = canvas.height - unit;
           }
         } else {
           // Player 2 (AI) - position striker automatically
@@ -82,6 +109,7 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
         }
       } else if (board.state === 'third') {
         let flag = true;
+        if(board.striker.state === 'motion') flag = false;
         for (let i = 0; i < board.gattis.length; i++) {
           if (board.gattis[i].state === 'motion') {
             flag = false;
@@ -94,16 +122,19 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
             onGameOver(
               board.player1.score,
               board.player2.score,
-              board.player1PiecesHit,
-              board.player2PiecesHit
+              board.player1.pocketed.length,
+              board.player2.pocketed.length
             );
             return;
           }
           
           board.state = 'first';
           setTimeout(() => {
-            board.nextTurn();
-            onTurnChange(board.turn);
+            const needsSwitch = board.next !== board.turn;
+            if (needsSwitch) {
+              board.nextTurn();
+              onTurnChange(board.turn);
+            }
             
             // If it's Player 2's turn (AI), automatically make the move
             if (board.isPlayer2Turn()) {
@@ -129,13 +160,13 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
                     const strikerPoint = new Point(aiMove.strikerX, aiMove.strikerY);
                     // Create a pullPoint that will make the shot go toward the aim point
                     const pullPoint = new Point(2 * strikerPoint.x - aimPoint.x, 2 * strikerPoint.y - aimPoint.y);
-                    const power = board.target.determinePower(strikerPoint, pullPoint);
+                    const power = board.target.determinePower(pullPoint, strikerPoint);
                     // Normalize direction and apply sensible strength
                     const magnitude = Math.sqrt(power.x * power.x + power.y * power.y) || 1;
                     const minStrength = 16;
                     const maxStrength = 34;
 
-                    const strength = Math.min(maxStrength, Math.max(minStrength, power.d * 0.22));
+                    const strength = Math.min(maxStrength, Math.max(minStrength, power.d * 0.3));
                     const normX = (power.x / magnitude) * strength;
                     const normY = (power.y / magnitude) * strength;
                     board.striker.strike(normX, normY);
@@ -191,7 +222,6 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
 
   const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!gameStarted || !canvasRef.current || !board.isPlayer1Turn()) return;
-    const canvas = canvasRef.current;
     const ut = new Util();
 
     if (board.target.flag && board.state === 'second') {
@@ -233,7 +263,6 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
   const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
     if (!gameStarted || !canvasRef.current || !board.isPlayer1Turn()) return;
     e.preventDefault();
-    const canvas = canvasRef.current;
     const ut = new Util();
 
     if (board.target.flag && board.state === 'second') {
@@ -258,34 +287,63 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
     }
   };
 
+  const renderPieces = (player: typeof board.player1) => (
+    <div className="pieces-row">
+      {player.pocketed.map((type, idx) => (
+        <div key={`${type}-${idx}`} className={`mini-gatti mini-${type}`} title={type} />
+      ))}
+      {player.pocketed.length === 0 && <span className="empty-pieces">No pieces yet</span>}
+    </div>
+  );
+
   return (
-    <div className="board-container">
-      <div className="label label-top">
-        {board.player2.name}: {board.player2.score} {board.isPlayer2Turn() && '(Playing...)'}
+    <div className="carrom-wrapper">
+      {gameStarted && (
+        <div className={`player-panel top-panel ${board.isPlayer2Turn() ? 'active-turn' : ''}`}>
+          <div className="player-info">
+            <span className="player-name">{board.player2.name}</span>
+            <span className="player-score">Score: {board.player2.score}</span>
+          </div>
+          <div className="collected-container">
+             {renderPieces(board.player2)}
+          </div>
+        </div>
+      )}
+
+      <div className="board-container">
+        <canvas
+          ref={backCanvasRef}
+          className="cnv back-canvas"
+          width={550}
+          height={550}
+        />
+        <canvas
+          ref={canvasRef}
+          className="cnv front-canvas"
+          width={550}
+          height={550}
+          onMouseMove={handleMouseMove}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onTouchMove={handleTouchMove}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        />
+        {showToast && (
+          <div className="toast">{toastMessage}</div>
+        )}
       </div>
-      <div className="label label-bottom">
-        {board.player1.name}: {board.player1.score} {board.isPlayer1Turn() && '(Your Turn)'}
-      </div>
-      <canvas
-        ref={backCanvasRef}
-        className="cnv back-canvas"
-        width={550}
-        height={550}
-      />
-      <canvas
-        ref={canvasRef}
-        className="cnv front-canvas"
-        width={550}
-        height={550}
-        onMouseMove={handleMouseMove}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onTouchMove={handleTouchMove}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      />
-      {showToast && (
-        <div className="toast">{toastMessage}</div>
+
+      {gameStarted && (
+        <div className={`player-panel bottom-panel ${board.isPlayer1Turn() ? 'active-turn' : ''}`}>
+          <div className="collected-container">
+              {renderPieces(board.player1)}
+          </div>
+          <div className="player-info">
+            <span className="player-name">{board.player1.name}</span>
+            <span className="player-score">Score: {board.player1.score}</span>
+          </div>
+        </div>
       )}
     </div>
   );

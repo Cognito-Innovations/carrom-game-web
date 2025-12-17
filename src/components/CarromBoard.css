@@ -1,22 +1,121 @@
+.carrom-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.player-panel {
+  width: 95%;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 8px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  min-height: 50px;
+}
+
+.player-panel.active-turn {
+  border-color: #28a745;
+  background: #f0fff4;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.top-panel .player-info {
+  align-items: flex-start;
+}
+
+.bottom-panel .player-info {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.player-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+}
+
+.player-score {
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+}
+
+.collected-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.top-panel .collected-container {
+  justify-content: flex-end;
+}
+
+.bottom-panel .collected-container {
+  justify-content: flex-start;
+}
+
+.pieces-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.empty-pieces {
+  font-size: 10px;
+  color: #aaa;
+  font-style: italic;
+}
+
+.mini-gatti {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.2);
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+.mini-black { background: #333; }
+.mini-white { background: #f0f0f0; }
+.mini-queen { background: #ff4444; border-color: #cc0000; }
+
 .board-container {
   position: relative;
-  background-color: saddlebrown;
-  border-radius: 5px;
-  margin: 0 auto;
+  background: linear-gradient(145deg, #8B4513, #A0522D);
+  border-radius: 8px;
   width: 100%;
-  max-width: 577px;
-  height: 577px;
-  margin-top: 40px;
-  transform-origin: center center;
+  max-width: 550px;
+  aspect-ratio: 1 / 1; 
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  border: 4px solid #5D4037;
+  overflow: hidden;
 }
 
 .cnv {
   position: absolute;
-  top: 13px;
-  left: 13px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   touch-action: none;
-  max-width: 100%;
-  height: auto;
 }
 
 .back-canvas {
@@ -29,113 +128,51 @@
   background-color: transparent;
 }
 
-.label {
-  position: absolute;
-  z-index: 3;
-  background-color: #373737;
-  padding: 5px 10px;
-  text-align: center;
-  width: 100px;
-  height: 20px;
-  line-height: 20px;
-  color: white;
-  font-family: sans-serif;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 5px;
-  margin: 0 auto;
-}
-
-.label-top {
-  top: -10px;
-  left: 0;
-  right: 0;
-}
-
-.label-bottom {
-  bottom: -10px;
-  left: 40%;
-}
-
 .toast {
   z-index: 15;
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: 100px;
-  height: 50px;
-  background-color: yellow;
-  color: black;
-  line-height: 50px;
-  border: 2px solid black;
-  border-radius: 5px;
-  text-align: center;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 12px 24px;
+  background: rgba(0,0,0,0.85);
+  color: #FFD700;
+  border-radius: 25px;
   font-weight: bold;
+  font-size: 16px;
+  text-align: center;
+  pointer-events: none;
+  border: 1px solid #FFD700;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  animation: fadeOut 2s forwards;
+  white-space: nowrap;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @media (max-width: 600px) {
   .board-container {
-    width: 100vw;
-    max-width: 100vw;
-    height: 100vw;
-    max-height: 100vw;
-    margin-top: 0;
+    width: 95vw;
+    height: 95vw;
+    max-width: 95vw;
+    border-width: 2px;
+  }
+  
+  .player-panel {
+    width: 95vw;
+    padding: 6px 10px;
   }
 
-  .cnv {
-    width: calc(100vw - 26px) !important;
-    height: calc(100vw - 26px) !important;
+  .mini-gatti {
+    width: 12px;
+    height: 12px;
   }
-
-  .label {
-    font-size: 10px;
-    padding: 3px 8px;
-    width: 80px;
-    height: 18px;
-    line-height: 18px;
-  }
-}
-
-/* Farcaster mini-app specific styles */
-@media (max-width: 400px) {
-  .board-container {
-    width: 100vw;
-    height: 100vw;
-    margin-top: 0;
-    padding: 0;
-  }
-
-  .cnv {
-    width: calc(100vw - 26px) !important;
-    height: calc(100vw - 26px) !important;
-    top: 13px;
-    left: 13px;
-  }
-
-  .label {
-    font-size: 9px;
-    padding: 2px 6px;
-    width: 70px;
-    height: 16px;
-    line-height: 16px;
-  }
-
-  .label-top {
-    top: -5px;
-  }
-
-  .label-bottom {
-    bottom: -5px;
+  
+  .player-name {
+    font-size: 12px;
   }
 }
-
-/* Ensure canvas maintains aspect ratio */
-.cnv {
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
-}
-

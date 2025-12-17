@@ -14,22 +14,39 @@ interface GameOverProps {
 }
 
 const GameOver: React.FC<GameOverProps> = ({ player1Score, player2Score, player1Pieces, player2Pieces, onRestart }) => {
-  const winner = player1Score > player2Score ? 'Player 1' : player2Score > player1Score ? 'Player 2 (Computer)' : 'Tie';
-  
+  let winner = '';
+  let title = '';
+  if (player1Score > player2Score) {
+    winner = 'Player 1';
+    title = 'You Win!';
+  } else if (player2Score > player1Score) {
+    winner = 'Player 2 (Computer)';
+    title = 'Game Over';
+  } else if (player1Pieces > player2Pieces) {
+    winner = 'Player 1';
+    title = 'You Win!';
+  } else if (player2Pieces > player1Pieces) {
+    winner = 'Player 2 (Computer)';
+    title = 'Game Over';
+  } else {
+    winner = 'Tie';
+    title = "It's a Tie!";
+  }
+
   return (
     <div className="game-over-overlay">
       <div className="game-over-box">
-        <h2>Game Over!</h2>
+        <h2>{title}</h2>
         <div className="final-scores">
           <div className="score-item">
             <h3>Player 1</h3>
             <p>Score: {player1Score}</p>
-            <p>Pieces Hit: {player1Pieces}</p>
+            <p>Pieces Collected: {player1Pieces}</p>
           </div>
           <div className="score-item">
             <h3>Player 2 (Computer)</h3>
             <p>Score: {player2Score}</p>
-            <p>Pieces Hit: {player2Pieces}</p>
+            <p>Pieces Collected: {player2Pieces}</p>
           </div>
         </div>
         <div className="winner">

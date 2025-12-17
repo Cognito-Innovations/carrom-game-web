@@ -11,18 +11,18 @@ export class AI {
   }
 
   // Checks if the path from p1 to p2 is blocked by any other gatti
-  private isPathClear(board: Board, p1: Point, p2: Point, excludeGatti: Gatti): boolean {
+  private isPathClear(board: Board, p1: Point, p2: Point, excludeGattis: Gatti[]): boolean {
     for (const gatti of board.gattis) {
-      if (gatti.type === 'striker' || gatti === excludeGatti) continue;
-      // Compute distance from gatti center to the line segment between p1 and p2
+      if (gatti.type === 'striker' || excludeGattis.includes(gatti)) continue;
+      const lineLenSq = (p2.x - p1.x)**2 + (p2.y - p1.y)**2;
+      if (lineLenSq === 0) continue;
       const t = Math.max(0, Math.min(1,
-        ((gatti.pos.x - p1.x)*(p2.x - p1.x) + (gatti.pos.y - p1.y)*(p2.y - p1.y)) /
-        ((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y))
+        ((gatti.pos.x - p1.x)*(p2.x - p1.x) + (gatti.pos.y - p1.y)*(p2.y - p1.y)) / lineLenSq
       ));
       const closestX = p1.x + t * (p2.x - p1.x);
-      const closestY = p1.y + t * (p2.y - p1.y);
+      const closestY = p1.y + t * (p2.y - p1.y); 
       const dist = this.util.getDistance(gatti.pos, new Point(closestX, closestY));
-      if (dist < gatti.radius + 5) return false;
+      if (dist < gatti.radius * 2 + 2) return false;
     }
     return true;
   }
@@ -33,63 +33,84 @@ export class AI {
     let bestTarget: Gatti | null = null;
     let bestScore = -1;
     let bestPower = { x: 0, y: 0 };
+    const aiColor = board.player2.color;
 
     // Try to hit pieces that can be pocketed
     for (const gatti of board.gattis) {
       if (gatti.type === 'striker') continue;
 
-      // Check if this gatti can be aimed at a hole
-      const distanceToStriker = this.util.getDistance(striker.pos, gatti.pos);
-      if (distanceToStriker < 30 || distanceToStriker > 400) continue; // Skip if too close or too far
+      // 1. If Queen is pending cover, MUST hit own color
+      if (board.queenMode && board.queenAwaitingCover === 'top' && gatti.type !== aiColor) {
+          continue;
+      }
+      // 2. Don't hit opponent pieces unless clearing path
+      if (!board.queenMode && gatti.type !== aiColor && gatti.type !== 'queen') {
+          continue; 
+      }
 
-      // Skip if path is blocked
-      if (!this.isPathClear(board, striker.pos, gatti.pos, gatti)) continue;
+      if (!this.isPathClear(board, striker.pos, gatti.pos, [gatti])) continue;
 
       // Calculate angle from striker to gatti
       const dx = gatti.pos.x - striker.pos.x;
       const dy = gatti.pos.y - striker.pos.y;
+      const distToPiece = Math.sqrt(dx*dx + dy*dy);
       const angle = Math.atan2(dy, dx);
       
-      // Find nearest hole to this gatti
-      let nearestHole = board.holes[0];
-      let minHoleDist = this.util.getDistance(gatti.pos, new Point(nearestHole.x, nearestHole.y));
-      
+      let bestHoleScore = -1;
+      let selectedHole = null;
+
       for (const hole of board.holes) {
-        const dist = this.util.getDistance(gatti.pos, new Point(hole.x, hole.y));
-        if (dist < minHoleDist) {
-          minHoleDist = dist;
-          nearestHole = hole;
+        const holePos = new Point(hole.x, hole.y);
+        if (!this.isPathClear(board, gatti.pos, holePos, [gatti])) continue;
+
+        const holeDx = hole.x - gatti.pos.x;
+        const holeDy = hole.y - gatti.pos.y;
+        const distToHole = Math.sqrt(holeDx*holeDx + holeDy*holeDy);
+        const angleToHole = Math.atan2(holeDy, holeDx);
+        
+        // Check Cut Angle
+        let angleDiff = Math.abs(angle - angleToHole);
+        if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
+        if (angleDiff > Math.PI / 2.5) continue;
+
+        const score = (1000 / distToHole) + (100 / (angleDiff + 0.1));
+
+        if (score > bestHoleScore) {
+          bestHoleScore = score;
+          selectedHole = hole;
         }
       }
 
-      // Calculate angle from gatti to nearest hole
-      const holeDx = nearestHole.x - gatti.pos.x;
-      const holeDy = nearestHole.y - gatti.pos.y;
-      const angleToHole = Math.atan2(holeDy, holeDx);
-      
-      // Calculate angle difference (normalized to 0-PI)
-      let angleDiff = Math.abs(angle - angleToHole);
-      if (angleDiff > Math.PI) angleDiff = 2 * Math.PI - angleDiff;
-      
-      // Score based on:
-      // 1. How close the gatti is to a hole
-      // 2. How well we can aim this gatti at the hole
-      // 3. Bonus for queen
-      const distanceScore = 1 / (minHoleDist + 1);
-      const angleScore = 1 / (angleDiff + 0.1);
-      const typeBonus = gatti.type === 'queen' ? 10 : 1;
-      const score = distanceScore * angleScore * typeBonus * (1 / (distanceToStriker / 100));
-      
-      if (score > bestScore) {
-        bestScore = score;
-        bestTarget = gatti;
-        
-        // Calculate power vector (direction from striker to gatti)
-        const powerDistance = Math.min(distanceToStriker * 0.12, 40);
-        bestPower = {
-          x: Math.cos(angle) * powerDistance,
-          y: Math.sin(angle) * powerDistance,
-        };
+      if (selectedHole && bestHoleScore > -1) {
+         let typeBonus = gatti.type === 'queen' ? 20 : (gatti.type === aiColor ? 10 : 1);
+         if(board.queenMode && board.queenAwaitingCover === 'top') typeBonus = 50;
+
+         const finalScore = bestHoleScore * typeBonus;
+
+         if (finalScore > bestScore) {
+           bestScore = finalScore;
+           bestTarget = gatti;
+
+           // Calculate total distance needed to travel
+           const distToHole = Math.sqrt(
+               (selectedHole.x - gatti.pos.x)**2 + (selectedHole.y - gatti.pos.y)**2
+           );
+           
+           // Base power needed to reach the hole + friction compensation
+           let rawPower = (distToPiece + distToHole) * 0.16; 
+           
+           // Add a "smash" factor if angle is straight, less power if it's a cut shot
+           const angleDiff = Math.abs(angle - Math.atan2(selectedHole.y - gatti.pos.y, selectedHole.x - gatti.pos.x));
+           if (angleDiff < 0.2) rawPower += 5; // Hit harder on straights
+
+           // Clamp Power
+           const powerFactor = Math.min(Math.max(rawPower, 18), 50);
+
+           bestPower = {
+             x: Math.cos(angle) * powerFactor,
+             y: Math.sin(angle) * powerFactor,
+           };
+         }
       }
     }
 
@@ -101,6 +122,8 @@ export class AI {
       
       for (const gatti of board.gattis) {
         if (gatti.type === 'striker') continue;
+        if (board.queenMode && gatti.type !== aiColor) continue;
+
         const dist = this.util.getDistance(striker.pos, gatti.pos);
         if (dist < minDist && dist > 30) {
           minDist = dist;
@@ -112,7 +135,7 @@ export class AI {
         const dx = nearestPiece.pos.x - striker.pos.x;
         const dy = nearestPiece.pos.y - striker.pos.y;
         const angle = Math.atan2(dy, dx);
-        const powerDistance = Math.min(minDist * 0.12, 35);
+        const powerDistance = 25; 
         bestPower = {
           x: Math.cos(angle) * powerDistance,
           y: Math.sin(angle) * powerDistance,
@@ -121,14 +144,8 @@ export class AI {
         // Fallback: aim at center
         const centerX = board.canvas.width / 2;
         const centerY = board.canvas.height / 2;
-        const dx = centerX - striker.pos.x;
-        const dy = centerY - striker.pos.y;
-        const angle = Math.atan2(dy, dx);
-        const powerDistance = 30;
-        bestPower = {
-          x: Math.cos(angle) * powerDistance,
-          y: Math.sin(angle) * powerDistance,
-        };
+        const angle = Math.atan2(centerY - striker.pos.y, centerX - striker.pos.x);
+        bestPower = { x: Math.cos(angle) * 30, y: Math.sin(angle) * 30 };
       }
     }
 
@@ -139,23 +156,36 @@ export class AI {
   makeMove(board: Board): { strikerX: number; strikerY: number; aimX: number; aimY: number } {
     const canvas = board.canvas;
     const unit = 60;
-    const start = unit;
-    const end = canvas.width - unit;
+    const start = unit + 20;
+    const end = canvas.width - unit - 20;
 
-    // Position striker (Player 2 is at top, so striker at top)
-    const strikerY = unit;
-    const strikerX = canvas.width / 2; // Center position
+    const strikerY = board.turn === 'bottom' ? canvas.height - unit : unit;
     
-    // Update striker position temporarily for calculations
+    let strikerX = this.util.random(start, end);
+    let bestMove = { target: null as Gatti | null, power: {x:0, y:0}, score: -1, sX: strikerX };
+    
+    // Testing more positions for better AI accuracy
+    const testPositions = [strikerX, start, end, canvas.width/2, start + (end-start)/3, end - (end-start)/3]; 
+    
     const originalStrikerPos = { x: board.striker.pos.x, y: board.striker.pos.y };
-    board.striker.pos.x = strikerX;
     board.striker.pos.y = strikerY;
 
-    // Find best target
-    const { power, target } = this.findBestTarget(board);
+    for (const testX of testPositions) {
+        board.striker.pos.x = testX;
+        const res = this.findBestTarget(board);
+        // Better scoring: targets exist > high score
+        const score = res.target ? (res.target.type === 'queen' ? 10 : 1) : 0; 
+        if (score >= bestMove.score) {
+            bestMove = { ...res, score, sX: testX };
+        }
+    }
+    
+    strikerX = bestMove.sX;
+    const { power, target } = bestMove;
 
-    // Calculate aim point - for Player 2 at top, we need to aim downward
-    // The aim point should be calculated from striker position toward the target
+    board.striker.pos.x = originalStrikerPos.x;
+    board.striker.pos.y = originalStrikerPos.y;
+
     let aimX: number;
     let aimY: number;
 
@@ -164,23 +194,22 @@ export class AI {
       const dx = target.pos.x - strikerX;
       const dy = target.pos.y - strikerY;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const aimDistance = Math.min(distance * 0.8, 200); // Extend aim line
+      const aimDistance = Math.min(distance * 0.8, 150); 
       
-      aimX = strikerX + (dx / distance) * aimDistance;
-      aimY = strikerY + (dy / distance) * aimDistance;
+      aimX = strikerX - (dx / distance) * aimDistance;
+      aimY = strikerY - (dy / distance) * aimDistance;
     } else {
-      // Fallback: use power calculation but extend it
-      aimX = strikerX + power.x * 3;
-      aimY = strikerY + power.y * 3;
+      aimX = strikerX - power.x * 3;
+      aimY = strikerY - power.y * 3;
     }
 
-    // Restore original position
-    board.striker.pos.x = originalStrikerPos.x;
-    board.striker.pos.y = originalStrikerPos.y;
+    aimX = Math.max(-200, Math.min(canvas.width + 200, aimX));
+    aimY = Math.max(-200, Math.min(canvas.height + 200, aimY));
 
-    // Ensure aim point is within bounds
-    aimX = Math.max(0, Math.min(canvas.width, aimX));
-    aimY = Math.max(0, Math.min(canvas.height, aimY));
+    if (board.turn === 'top') {
+        aimX = canvas.width - aimX;
+        aimY = canvas.height - aimY;
+    }
 
     return {
       strikerX: Math.max(start, Math.min(end, strikerX)),

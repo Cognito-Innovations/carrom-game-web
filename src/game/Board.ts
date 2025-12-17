@@ -21,9 +21,12 @@ export class Board {
   player1: Player;
   player2: Player;
   queenMode: boolean;
+  queenAwaitingCover: string;
   isGameOver: boolean;
+  isGameStarted: boolean;
   player1PiecesHit: number;
   player2PiecesHit: number;
+  consecutiveTurns: number;
 
   constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.ctx = ctx;
@@ -36,12 +39,15 @@ export class Board {
     this.state = 'first';
     this.turn = 'bottom';
     this.next = 'top';
-    this.player1 = new Player('Player 1', 0);
-    this.player2 = new Player('Player 2 (Computer)', 1);
+    this.player1 = new Player('Player 1', 0, 'white');
+    this.player2 = new Player('Player 2 (Computer)', 1, 'black'); 
     this.queenMode = false;
+    this.queenAwaitingCover = '';
     this.isGameOver = false;
+    this.isGameStarted = false;
     this.player1PiecesHit = 0;
     this.player2PiecesHit = 0;
+    this.consecutiveTurns = 0;
   }
 
   init(): void {
@@ -52,15 +58,18 @@ export class Board {
     for (let i = 0; i < 4; i++) {
       this.holes.push(new Hole(i, this.canvas.width, this.canvas.height));
     }
-    this.player1 = new Player('Player 1', 0);
-    this.player2 = new Player('Player 2 (Computer)', 1);
+    this.player1 = new Player('Player 1', 0, 'white');
+    this.player2 = new Player('Player 2 (Computer)', 1, 'black');
     this.state = 'first';
-    this.turn = 'bottom'; // Player 1 starts at bottom
+    this.turn = 'bottom'; 
     this.next = 'top';
     this.queenMode = false;
+    this.queenAwaitingCover = '';
     this.isGameOver = false;
+    this.isGameStarted = true;
     this.player1PiecesHit = 0;
     this.player2PiecesHit = 0;
+    this.consecutiveTurns = 0;
   }
 
   draw(backCtx: CanvasRenderingContext2D): void {
@@ -152,12 +161,12 @@ export class Board {
 
       const p = arrPos[i];
       backCtx.beginPath();
-      backCtx.arc(p.x + x, p.y + y, 20, 0, 2 * Math.PI);
+      backCtx.arc(p.x + x!, p.y + y!, 20, 0, 2 * Math.PI);
       backCtx.fillStyle = 'lightsalmon';
       backCtx.fill();
 
       backCtx.beginPath();
-      backCtx.arc(p.x + x, p.y + y, 20, 0, 2 * Math.PI);
+      backCtx.arc(p.x + x!, p.y + y!, 20, 0, 2 * Math.PI);
       backCtx.strokeStyle = '#000000';
       backCtx.lineWidth = 1;
       backCtx.stroke();
@@ -182,8 +191,8 @@ export class Board {
       }
 
       const p = arrPos[i];
-      const tox = p.x + unitX;
-      const toy = p.y + unitY;
+      const tox = p.x + unitX!;
+      const toy = p.y + unitY!;
       const fromx = p.x;
       const fromy = p.y;
       const headlen = 8;
@@ -213,9 +222,8 @@ export class Board {
   arrangeGattis(): void {
     this.gattis.push(new Gatti('queen', new Point(this.canvas.width / 2, this.canvas.height / 2)));
 
-    this.gattis[0].velocity.x = 0.00005;
-    this.gattis[0].state = 'motion';
-
+    this.gattis[0].velocity.x = 0; 
+    
     const s = this.gattis[0].radius * 2;
 
     this.gattis.push(new Gatti('black', new Point(this.canvas.width / 2 + s, this.canvas.height / 2)));
@@ -243,30 +251,100 @@ export class Board {
     this.gattis.push(new Gatti('white', new Point(this.canvas.width / 2 - 2 * s, this.canvas.height / 2 + 2 * s)));
   }
 
-  nextTurn(): void {
-    if (this.turn === 'bottom') {
-      this.turn = 'top'; // Switch to Player 2 (Computer)
-      this.next = 'bottom';
-    } else {
-      this.turn = 'bottom'; // Switch to Player 1 (Manual)
-      this.next = 'top';
+  getFreeCenterPos(radius: number): Point {
+    const center = new Point(this.canvas.width / 2, this.canvas.height / 2);
+    let angle = 0;
+    let dist = 0;
+    while(dist < 150) {
+        const x = center.x + Math.cos(angle) * dist;
+        const y = center.y + Math.sin(angle) * dist;
+        
+        let occupied = false;
+        for(const g of this.gattis) {
+            if(g.type === 'striker') continue;
+            const d = Math.sqrt((g.pos.x - x)**2 + (g.pos.y - y)**2);
+            if(d < g.radius + radius + 2) {
+                occupied = true;
+                break;
+            }
+        }
+        
+        if(!occupied) return new Point(x, y);
+        
+        angle += 1;
+        if(angle > Math.PI * 2 * (dist > 0 ? dist/10 : 1)) {
+            dist += radius + 2;
+            angle = 0;
+        }
     }
+    return center;
+  }
+
+  returnPenaltyGatti(player: Player): void {
+      if (player.pocketed.length > 0) {
+          const typeToReturn = player.pocketed.pop();
+          if (typeToReturn) {
+              player.decScore(); 
+              if (typeToReturn === 'queen') player.hasQueen = false;
+
+              const pos = this.getFreeCenterPos(13);
+              const g = new Gatti(typeToReturn, pos);
+              g.velocity = new Point(0, 0); 
+              this.gattis.push(g);
+
+              console.log(`Penalty: Returned ${typeToReturn} for ${player.name}`);
+          }
+      } else {
+          console.log(`${player.name} has no gattis to return for penalty.`);
+      }
+  }
+
+  nextTurn(): void {
+    const currentPlayer = this.getCurrentPlayer();
     
-    // Move striker to appropriate position
-    const unit = 60;
+    // 1. Check Queen Cover Failure
+    if (this.queenMode && this.queenAwaitingCover === currentPlayer?.id) {
+        const pos = this.getFreeCenterPos(15);
+        this.gattis.push(new Gatti('queen', pos));
+        
+        this.queenMode = false;
+        this.queenAwaitingCover = '';
+        this.toast('Queen Returned (Cover Failed)', () => {});
+    }
+
+    // 2. Switch Turn
+    const previousTurn = this.turn;
+    this.turn = this.next;
+    
+    // 3. Reset Consecutive Counter only if player CHANGED
+    if (this.turn !== previousTurn) {
+        this.consecutiveTurns = 0;
+    }
+
+    // 4. Set Default Next Turn
     if (this.turn === 'bottom') {
-      this.striker.pos.y = this.canvas.height - unit;
+      this.striker.pos.y = this.canvas.height - 60;
+      this.next = 'top'; 
     } else {
-      this.striker.pos.y = unit;
+      this.striker.pos.y = 60;
+      this.next = 'bottom';
     }
     this.striker.pos.x = this.canvas.width / 2;
+    this.striker.velocity = new Point(0, 0);
   }
 
   checkGameOver(): boolean {
-    // Game ends when all pieces (except striker) are pocketed
-    const remainingPieces = this.gattis.filter(g => g.type !== 'striker').length;
-    if (remainingPieces === 0) {
+    const blackWhiteRemaining = this.gattis.filter(g => g.type === 'black' || g.type === 'white').length;
+    if (blackWhiteRemaining === 0) {
+      if (this.queenMode && this.queenAwaitingCover) {
+        const player = this.queenAwaitingCover === 'bottom' ? this.player1 : this.player2;
+        player.incScore('queen');
+        player.pocketGatti('queen');
+        this.queenMode = false;
+        this.queenAwaitingCover = '';
+      }
       this.isGameOver = true;
+      this.isGameStarted = false; 
       return true;
     }
     return false;
