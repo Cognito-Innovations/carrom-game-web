@@ -1,16 +1,14 @@
 import React, { useEffect } from 'react';
+import { sdk } from '@farcaster/miniapp-sdk';
 import { Game } from './components/Game';
 import './App.css';
 
 function App() {
   useEffect(() => {
-    if (window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      tg.expand();
-    }
+    (async () => {
+      await sdk.actions.ready();
+    })();
   }, []);
-
   return (
     <div className="App">
       <Game />
