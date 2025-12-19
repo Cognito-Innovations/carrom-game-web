@@ -127,7 +127,7 @@ export class Gatti {
 
   checkInHoles(holes: Hole[], gattis: Gatti[], board: Board, onGattiPocketed: (gatti: Gatti, holeIndex: number) => void): void {
 
-    const isStrikerInHole = holes.some(h => h.check(board.striker));
+    const isStrikerInHole = this.type === 'striker' ? false : holes.some(h => h.check(board.striker));
 
     for (let i = 0; i < holes.length; i++) {
       const h = holes[i];
@@ -140,25 +140,24 @@ export class Gatti {
         let isPocketed = false;
 
         if (this.type === 'striker') {
-           board.toast('Foul: Striker Pocketed', () => {
-              board.returnPenaltyGatti(currentPlayer);
-           });
-           this.velocity.x = 0;
-           this.velocity.y = 0;
-           repeatTurn = false;
-           isPocketed = false; 
+            this.velocity.x = 0;
+            this.velocity.y = 0;
+            this.pos.x = -1000; 
+
+            board.toast('Foul: Striker Pocketed', () => {
+               board.returnPenaltyGatti(currentPlayer);
+            });
+            
+            repeatTurn = false;
+            isPocketed = false; 
         }
 
         else {
             // Check if Striker also fell in (Foul)
             if (isStrikerInHole) {
-                board.toast('Foul: Striker + Coin!', () => {
-                   // Return coin to center
-                   this.velocity.x = 0;
-                   this.velocity.y = 0;
-                   this.pos = board.getFreeCenterPos(this.radius);
-                   board.returnPenaltyGatti(currentPlayer); 
-                });
+                this.velocity.x = 0;
+                this.velocity.y = 0;
+                this.pos = board.getFreeCenterPos(this.radius);
                 repeatTurn = false; 
                 isPocketed = false; 
                 return;
@@ -169,6 +168,7 @@ export class Gatti {
                board.queenAwaitingCover = currentPlayer.id;
                isPocketed = true;
                repeatTurn = true; 
+               board.consecutiveTurns++;
             }
             else if (this.type === 'black' || this.type === 'white') {
                 // Check "Last Coin Before Queen" Foul
@@ -194,13 +194,8 @@ export class Gatti {
                         currentPlayer.pocketGatti(this.type);
                         currentPlayer.incScore();
                         
-                        // LIMIT TO 1 EXTRA TURN
-                        if (board.consecutiveTurns >= 1) {
-                            repeatTurn = false; // Limit reached
-                        } else {
-                            board.consecutiveTurns++;
-                            repeatTurn = true;  // Bonus turn
-                        }
+                        board.consecutiveTurns++;
+                        repeatTurn = true;
 
                         // Queen Cover Success
                         if (board.queenMode && board.queenAwaitingCover === currentPlayer.id) {
@@ -216,6 +211,7 @@ export class Gatti {
                         opponent.pocketGatti(this.type);
                         opponent.incScore();
                         repeatTurn = false; 
+                        board.consecutiveTurns = 0;
                     }
                 }
             }

@@ -55,7 +55,7 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
         board.striker.checkBoundary(canvas);
         board.striker.checkInHoles(
           board.holes, 
-          [],
+          board.gattis,
           board,
           () => {
             showGameMessage("⚠️ FOUL! Striker Pocketed");
@@ -74,10 +74,19 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
             board.gattis,
             board,
             (gatti, holeIndex) => {
-              // Handle gatti pocketed
-              const currentPlayer = board.isPlayer1Turn() ? "Player 1" : "Computer";
+              const isPlayer1 = board.isPlayer1Turn();
 
-              showGameMessage(`Nice Shot! Second Chance 🎯`);
+              if (gatti.type === 'queen') {
+                showGameMessage("Queen Pocketed! 👑");
+                return;
+              }
+
+              const isPlayer1Scored = isPlayer1 && gatti.type === 'white';
+              const isPlayer2Scored = !isPlayer1 && gatti.type === 'black';
+
+              if (isPlayer1Scored || isPlayer2Scored) {
+                showGameMessage(`Nice Shot! Second Chance 🎯`);
+              }
             }
           );
         }

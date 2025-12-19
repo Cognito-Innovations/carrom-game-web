@@ -1,66 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import { useTonAddress } from '@tonconnect/ui-react';
 import { Board } from '../game/Board';
 import { CarromBoard } from './CarromBoard';
 import { Menu } from './Menu';
 import './Game.css';
 import './GameOver.css';
+import { GameOver } from './GameOver';
 
-interface GameOverProps {
-  player1Score: number;
-  player2Score: number;
-  player1Pieces: number;
-  player2Pieces: number;
-  onRestart: () => void;
+interface GameProps {
+  telegramUser: any;
 }
 
-const GameOver: React.FC<GameOverProps> = ({ player1Score, player2Score, player1Pieces, player2Pieces, onRestart }) => {
-  let winner = '';
-  let title = '';
-  if (player1Score > player2Score) {
-    winner = 'Player 1';
-    title = 'You Win!';
-  } else if (player2Score > player1Score) {
-    winner = 'Player 2 (Computer)';
-    title = 'Game Over';
-  } else if (player1Pieces > player2Pieces) {
-    winner = 'Player 1';
-    title = 'You Win!';
-  } else if (player2Pieces > player1Pieces) {
-    winner = 'Player 2 (Computer)';
-    title = 'Game Over';
-  } else {
-    winner = 'Tie';
-    title = "It's a Tie!";
-  }
-
-  return (
-    <div className="game-over-overlay">
-      <div className="game-over-box">
-        <h2>{title}</h2>
-        <div className="final-scores">
-          <div className="score-item">
-            <h3>Player 1</h3>
-            <p>Score: {player1Score}</p>
-            <p>Pieces Collected: {player1Pieces}</p>
-          </div>
-          <div className="score-item">
-            <h3>Player 2 (Computer)</h3>
-            <p>Score: {player2Score}</p>
-            <p>Pieces Collected: {player2Pieces}</p>
-          </div>
-        </div>
-        <div className="winner">
-          <h2>{winner === 'Tie' ? "It's a Tie!" : `${winner} Wins!`}</h2>
-        </div>
-        <button className="restart-btn" onClick={onRestart}>
-          Play Again
-        </button>
-      </div>
-    </div>
-  );
-};
-
-export const Game: React.FC = () => {
+export const Game: React.FC<GameProps> = ({ telegramUser }) => {
   const [gameStarted, setGameStarted] = useState(false);
   const [board, setBoard] = useState<Board | null>(null);
   const [player1Score, setPlayer1Score] = useState(0);
@@ -68,6 +19,10 @@ export const Game: React.FC = () => {
   const [currentTurn, setCurrentTurn] = useState('bottom');
   const [gameOver, setGameOver] = useState(false);
   const [finalScores, setFinalScores] = useState({ p1: 0, p2: 0, p1Pieces: 0, p2Pieces: 0 });
+
+  const tonAddress = useTonAddress();
+  const isWalletConnected = !!tonAddress;
+  const tg = window.Telegram?.WebApp;
 
   useEffect(() => {
     // Initialize board with temporary canvas for initial setup
@@ -90,6 +45,11 @@ export const Game: React.FC = () => {
   }, []);
 
   const handleStartGame = () => {
+    if (!isWalletConnected) {
+      tg?.showAlert('Please connect your TON wallet first!');
+      return;
+    }
+
     if (board) {
       // Reset the board for new game
       const canvas = document.createElement('canvas');
@@ -170,14 +130,31 @@ export const Game: React.FC = () => {
 
   return (
     <div className="game-container">
-      {!gameStarted && <Menu onStartGame={handleStartGame} />}
-      <CarromBoard
-        board={board}
-        gameStarted={gameStarted}
-        onScoreUpdate={handleScoreUpdate}
-        onTurnChange={handleTurnChange}
-        onGameOver={handleGameOver}
-      />
+      {/* TODO: Uncomment to go directly to win for debugging */}
+      {gameStarted && !gameOver && (
+        <button 
+          onClick={() => handleGameOver(100, 0, 9, 0)} 
+          style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000, padding: '10px', background: 'red', color: 'white', border: 'none', borderRadius: '5px' }}
+        >
+          DEBUG: Win Now 🏆
+        </button>
+      )}
+
+      {!gameStarted && (
+        <Menu
+          onStartGame={handleStartGame}
+          isWalletConnected={isWalletConnected}
+        />
+      )}
+      {gameStarted && (
+        <CarromBoard
+          board={board}
+          gameStarted={gameStarted}
+          onScoreUpdate={handleScoreUpdate}
+          onTurnChange={handleTurnChange}
+          onGameOver={handleGameOver}
+        />
+      )}
       {gameOver && (
         <GameOver
           player1Score={finalScores.p1}
@@ -185,6 +162,9 @@ export const Game: React.FC = () => {
           player1Pieces={finalScores.p1Pieces}
           player2Pieces={finalScores.p2Pieces}
           onRestart={handleRestart}
+          tonAddress={tonAddress}
+          telegramUser={telegramUser}
+          onMintNFT={() => console.log('NFT claimed')}
         />
       )}
     </div>

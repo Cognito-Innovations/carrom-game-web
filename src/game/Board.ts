@@ -282,7 +282,14 @@ export class Board {
 
   returnPenaltyGatti(player: Player): void {
       if (player.pocketed.length > 0) {
-          const typeToReturn = player.pocketed.pop();
+          let index = player.pocketed.lastIndexOf(player.color);
+          if (index === -1) {
+            index = player.pocketed.lastIndexOf('queen');
+          }
+          if (index === -1) index = player.pocketed.length - 1;
+
+          const typeToReturn = player.pocketed.splice(index, 1)[0];
+          
           if (typeToReturn) {
               player.decScore(); 
               if (typeToReturn === 'queen') player.hasQueen = false;
@@ -295,7 +302,8 @@ export class Board {
               console.log(`Penalty: Returned ${typeToReturn} for ${player.name}`);
           }
       } else {
-          console.log(`${player.name} has no gattis to return for penalty.`);
+          player.decScore();
+          console.log(`${player.name} has no gattis to return. Score deducted.`);
       }
   }
 

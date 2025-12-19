@@ -135,17 +135,18 @@ export class AI {
         const dx = nearestPiece.pos.x - striker.pos.x;
         const dy = nearestPiece.pos.y - striker.pos.y;
         const angle = Math.atan2(dy, dx);
-        const powerDistance = 25; 
+        const powerDistance = 25 + (Math.random() * 5); 
         bestPower = {
           x: Math.cos(angle) * powerDistance,
           y: Math.sin(angle) * powerDistance,
         };
       } else {
-        // Fallback: aim at center
+        // Fallback: aim at center with random variation
         const centerX = board.canvas.width / 2;
         const centerY = board.canvas.height / 2;
         const angle = Math.atan2(centerY - striker.pos.y, centerX - striker.pos.x);
-        bestPower = { x: Math.cos(angle) * 30, y: Math.sin(angle) * 30 };
+        const randomPower = 25 + Math.random() * 10;
+        bestPower = { x: Math.cos(angle) * randomPower, y: Math.sin(angle) * randomPower };
       }
     }
 
@@ -161,11 +162,13 @@ export class AI {
 
     const strikerY = board.turn === 'bottom' ? canvas.height - unit : unit;
     
-    let strikerX = this.util.random(start, end);
+    const randomPos = this.util.random(start, end);
+    let strikerX = randomPos;
+
     let bestMove = { target: null as Gatti | null, power: {x:0, y:0}, score: -1, sX: strikerX };
     
-    // Testing more positions for better AI accuracy
-    const testPositions = [strikerX, start, end, canvas.width/2, start + (end-start)/3, end - (end-start)/3]; 
+    // Testing more positions for better AI accuracy, including the random one
+    const testPositions = [strikerX, start, end, canvas.width/2, start + (end-start)/3, end - (end-start)/3, randomPos]; 
     
     const originalStrikerPos = { x: board.striker.pos.x, y: board.striker.pos.y };
     board.striker.pos.y = strikerY;
@@ -175,7 +178,8 @@ export class AI {
         const res = this.findBestTarget(board);
         // Better scoring: targets exist > high score
         const score = res.target ? (res.target.type === 'queen' ? 10 : 1) : 0; 
-        if (score >= bestMove.score) {
+
+        if (score > bestMove.score || (score === bestMove.score && Math.random() > 0.9)) {
             bestMove = { ...res, score, sX: testX };
         }
     }
@@ -202,6 +206,9 @@ export class AI {
       aimX = strikerX - power.x * 3;
       aimY = strikerY - power.y * 3;
     }
+
+    aimX += (Math.random() - 0.5) * 2;
+    aimY += (Math.random() - 0.5) * 2;
 
     aimX = Math.max(-200, Math.min(canvas.width + 200, aimX));
     aimY = Math.max(-200, Math.min(canvas.height + 200, aimY));
