@@ -27,6 +27,19 @@ export class Board {
   player1PiecesHit: number;
   player2PiecesHit: number;
   consecutiveTurns: number;
+  didPocketOwnThisTurn: boolean = false;
+
+  // Animation properties for smooth transitions
+  isAnimatingStriker: boolean = false;
+  strikerAnimStartPos?: Point;
+  strikerTargetPos?: Point;
+  startAnimTime: number = 0;
+  animationDuration: number = 400;
+  isAnimatingAim: boolean = false;
+  aimAnimStartPos?: Point;
+  aimTargetPos?: Point;
+  aimStartTime: number = 0;
+  aimDuration: number = 250;
 
   constructor(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     this.ctx = ctx;
@@ -48,6 +61,7 @@ export class Board {
     this.player1PiecesHit = 0;
     this.player2PiecesHit = 0;
     this.consecutiveTurns = 0;
+    this.didPocketOwnThisTurn = false;
   }
 
   init(): void {
@@ -70,6 +84,16 @@ export class Board {
     this.player1PiecesHit = 0;
     this.player2PiecesHit = 0;
     this.consecutiveTurns = 0;
+    this.didPocketOwnThisTurn = false;
+    // Reset animation states
+    this.isAnimatingStriker = false;
+    this.strikerAnimStartPos = undefined;
+    this.strikerTargetPos = undefined;
+    this.startAnimTime = 0;
+    this.isAnimatingAim = false;
+    this.aimAnimStartPos = undefined;
+    this.aimTargetPos = undefined;
+    this.aimStartTime = 0;
   }
 
   draw(backCtx: CanvasRenderingContext2D): void {
@@ -331,14 +355,12 @@ export class Board {
 
     // 4. Set Default Next Turn
     if (this.turn === 'bottom') {
-      this.striker.pos.y = this.canvas.height - 60;
       this.next = 'top'; 
     } else {
-      this.striker.pos.y = 60;
       this.next = 'bottom';
     }
-    this.striker.pos.x = this.canvas.width / 2;
     this.striker.velocity = new Point(0, 0);
+    // Position animation handled in CarromBoard update loop
   }
 
   checkGameOver(): boolean {

@@ -136,7 +136,6 @@ export class Gatti {
         const currentPlayer = board.getCurrentPlayer();
         if (!currentPlayer) return;
 
-        let repeatTurn = false;
         let isPocketed = false;
 
         if (this.type === 'striker') {
@@ -148,7 +147,6 @@ export class Gatti {
                board.returnPenaltyGatti(currentPlayer);
             });
             
-            repeatTurn = false;
             isPocketed = false; 
         }
 
@@ -158,7 +156,6 @@ export class Gatti {
                 this.velocity.x = 0;
                 this.velocity.y = 0;
                 this.pos = board.getFreeCenterPos(this.radius);
-                repeatTurn = false; 
                 isPocketed = false; 
                 return;
             }
@@ -166,9 +163,9 @@ export class Gatti {
             if (this.type === 'queen') {
                board.queenMode = true;
                board.queenAwaitingCover = currentPlayer.id;
-               isPocketed = true;
-               repeatTurn = true; 
+               board.didPocketOwnThisTurn = true;
                board.consecutiveTurns++;
+               isPocketed = true;
             }
             else if (this.type === 'black' || this.type === 'white') {
                 // Check "Last Coin Before Queen" Foul
@@ -182,7 +179,6 @@ export class Gatti {
                     this.velocity.x = 0; 
                     this.velocity.y = 0;
                     this.pos = board.getFreeCenterPos(this.radius);
-                    repeatTurn = false; 
                     isPocketed = false; 
                 } 
                 else {
@@ -194,8 +190,8 @@ export class Gatti {
                         currentPlayer.pocketGatti(this.type);
                         currentPlayer.incScore();
                         
+                        board.didPocketOwnThisTurn = true;
                         board.consecutiveTurns++;
-                        repeatTurn = true;
 
                         // Queen Cover Success
                         if (board.queenMode && board.queenAwaitingCover === currentPlayer.id) {
@@ -210,7 +206,6 @@ export class Gatti {
                         const opponent = board.isPlayer1Turn() ? board.player2 : board.player1;
                         opponent.pocketGatti(this.type);
                         opponent.incScore();
-                        repeatTurn = false; 
                         board.consecutiveTurns = 0;
                     }
                 }
@@ -229,12 +224,6 @@ export class Gatti {
              }
         }
 
-        // If we found a hole, we decide here if we repeat or switch
-        if (repeatTurn) {
-             board.next = board.turn;
-        } else {
-             board.next = board.turn === 'bottom' ? 'top' : 'bottom';
-        }
         return; 
       }
     }

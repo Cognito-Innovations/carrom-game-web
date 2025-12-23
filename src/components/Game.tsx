@@ -131,14 +131,14 @@ export const Game: React.FC<GameProps> = ({ telegramUser }) => {
   return (
     <div className="game-container">
       {/* TODO: Uncomment to go directly to win for debugging */}
-      {gameStarted && !gameOver && (
+      {/* {gameStarted && !gameOver && (
         <button 
           onClick={() => handleGameOver(100, 0, 9, 0)} 
           style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 1000, padding: '10px', background: 'red', color: 'white', border: 'none', borderRadius: '5px' }}
         >
           DEBUG: Win Now 🏆
         </button>
-      )}
+      )} */}
 
       {!gameStarted && (
         <Menu
