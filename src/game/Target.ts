@@ -19,10 +19,11 @@ export class Target {
 
     const x1 = striker.pos.x;
     const y1 = striker.pos.y;
-    const x2 = cursor.final.x;
-    const y2 = cursor.final.y;
+    // Calculate reversed (pull-back) vector for slingshot behavior
+    const x2 = 2 * x1 - cursor.final.x;
+    const y2 = 2 * y1 - cursor.final.y;
     
-    // Power line - thick line from striker to cursor
+    // Power line - thick line from striker to the pulled (reversed) point
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
@@ -37,10 +38,10 @@ export class Target {
     const x3 = (m * x1 - n * x2) / (m - n);
     const y3 = (m * y1 - n * y2) / (m - n);
     
-    // Guide line - dashed line extending from striker
+    // Guide line - dashed line extending from striker (in aiming direction)
     ctx.beginPath();
-    ctx.moveTo(x3, y3);
-    ctx.lineTo(x1, y1);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x3, y3);
     ctx.strokeStyle = '#373737';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
@@ -73,13 +74,15 @@ export class Target {
   }
 
   determinePower(p1: Point, p2: Point): { x: number; y: number; d: number } {
+    // Reverse the direction: shoot opposite to the pull direction
     const ut = new Util();
-    const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-
-    const d = ut.getDistance(p1, p2);
+    // p2 is the pull point, p1 is striker. Shot direction should be from striker to opposite of pull vector
+    const reversedX = 2 * p1.x - p2.x;
+    const reversedY = 2 * p1.y - p2.y;
+    const angle = Math.atan2(reversedY - p1.y, reversedX - p1.x);
+    const d = ut.getDistance(p1, { x: reversedX, y: reversedY });
     const fx = d * Math.cos(angle);
     const fy = d * Math.sin(angle);
-
     return {
       x: fx,
       y: fy,

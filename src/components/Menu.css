@@ -1,56 +1,381 @@
-.menu-box {
-  z-index: 10;
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+.menu-container::before {
+  content: '';
   position: absolute;
-  margin: 0 auto;
+  top: 0;
   left: 0;
   right: 0;
-  top: 50px;
-  background-color: white;
-  border: 1px solid black;
-  border-radius: 5px;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 40px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 80px;
+}
+
+.menu-title {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #fff 0%, #e6e6e6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.wallet-section {
+  display: flex;
+  align-items: center;
+  margin-left: 20px;
+}
+
+.connect-btn {
+  --ton-connect-ui-font-family: inherit;
+  --ton-connect-ui-button-border-radius: 16px;
+  --ton-connect-ui-button-height: 48px;
+  --ton-connect-ui-button-background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
+  --ton-connect-ui-button-color: white;
+  --ton-connect-ui-button-hover-background: linear-gradient(135deg, #0052cc 0%, #003d99 100%);
+  --ton-connect-ui-button-padding: 0 20px;
+  --ton-connect-ui-button-font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 140px;
+}
+
+.connect-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 102, 255, 0.3);
+}
+
+.menu-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 40px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.menu-main::before {
+  content: '';
+  position: absolute;
   width: 300px;
-  height: 100px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  filter: blur(40px);
+  opacity: 0.3;
+  z-index: -1;
+}
+
+.game-icon {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+  border-radius: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: 
+    0 20px 40px rgba(67, 97, 238, 0.3),
+    inset 0 4px 8px rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
 }
 
-.btn {
-  padding: 10px;
-  margin: 20px;
-  height: 30px;
-  line-height: 30px;
-  background-color: transparent;
-  color: black;
-  border-radius: 5px;
+.game-icon::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  animation: shine 3s infinite linear;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.game-icon span {
+  font-size: 3rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.start-btn {
+  padding: 20px 48px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
   cursor: pointer;
-  font-family: sans-serif;
-  font-size: 15px;
-  border: 2px solid deepskyblue;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 12px 32px rgba(0, 255, 136, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.1);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.start-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.7s ease;
+}
+
+.start-btn:hover:not(.disabled) {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 
+    0 20px 48px rgba(0, 255, 136, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #00ff99 0%, #00dd77 100%);
+}
+
+.start-btn:hover:not(.disabled)::before {
+  left: 100%;
+}
+
+.start-btn:active:not(.disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 24px rgba(0, 255, 136, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.start-btn.disabled {
+  background: linear-gradient(135deg, #666 0%, #444 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.connect-message {
   text-align: center;
-  user-select: none;
+  font-size: 1.2rem;
+  max-width: 400px;
+  line-height: 1.5;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeIn 0.5s ease-out;
 }
 
-.btn:hover {
-  background-color: deepskyblue;
-  color: white;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.btn:active {
-  transform: scale(0.95);
+/* Tablet (768px) */
+@media (max-width: 768px) {
+  .menu-header {
+    padding: 20px 24px;
+    flex-direction: row;
+    gap: 16px;
+    text-align: center;
+    align-items: center;
+  }
+
+  .menu-title {
+    font-size: 1.6rem;
+    margin-bottom: 0;
+    text-align: left;
+    line-height: 1.3;
+  }
+
+  .wallet-section {
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .connect-btn {
+    --ton-connect-ui-button-height: 40px;
+    --ton-connect-ui-button-padding: 0 16px;
+    --ton-connect-ui-button-font-size: 12px;
+    min-width: 120px;
+  }
+
+  .menu-main {
+    padding: 24px;
+    gap: 28px;
+  }
+
+  .game-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 24px;
+  }
+
+  .game-icon span {
+    font-size: 2.5rem;
+  }
+
+  .start-btn {
+    font-size: 1.4rem;
+    padding: 18px 40px;
+    border-radius: 18px;
+  }
+
+  .connect-message {
+    font-size: 1.1rem;
+    max-width: 320px;
+  }
 }
 
-@media (max-width: 600px) {
-  .menu-box {
-    width: 250px;
+/* Mobile (480px) */
+@media (max-width: 480px) {
+  .menu-container {
+    width: 100%;
+    height: 100%;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .menu-header {
+    padding: 16px 20px;
+    flex-direction: row;
+    gap: 12px;
+    text-align: left;
+    align-items: center;
+    min-height: 70px;
+    position: relative;
+  }
+
+  .menu-title {
+    font-size: 1.3rem;
+    flex: 1;
+    text-align: left;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    max-height: 3.4em;
+  }
+
+  .wallet-section {
+    width: auto;
+    position: static;
+    flex-shrink: 0;
+  }
+
+  .connect-btn {
+    --ton-connect-ui-button-height: 36px;
+    --ton-connect-ui-button-border-radius: 12px;
+    --ton-connect-ui-button-padding: 0 12px;
+    --ton-connect-ui-button-font-size: 11px;
+    min-width: 100px;
+  }
+
+  .menu-main {
+    padding: 20px;
+    gap: 24px;
+    height: calc(100vh - 70px);
+    justify-content: center;
+    overflow-y: auto;
+  }
+
+  .game-icon {
+    width: 80px;
     height: 80px;
-    top: 30px;
+    border-radius: 20px;
+    margin-bottom: 12px;
   }
 
-  .btn {
-    font-size: 14px;
-    padding: 8px;
-    margin: 15px;
+  .game-icon span {
+    font-size: 2rem;
+  }
+
+  .start-btn {
+    font-size: 1.2rem;
+    padding: 16px 32px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .connect-message {
+    font-size: 1rem;
+    max-width: 280px;
+    padding: 12px 20px;
   }
 }
 
+/* Small Height Screens */
+@media (max-height: 600px) {
+  .menu-main {
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 20px;
+    padding-top: 40px;
+  }
+
+  .game-icon {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 12px;
+  }
+
+  .game-icon span {
+    font-size: 1.8rem;
+  }
+
+  .start-btn {
+    margin-bottom: 8px;
+    padding: 14px 28px;
+    font-size: 1.1rem;
+  }
+}
