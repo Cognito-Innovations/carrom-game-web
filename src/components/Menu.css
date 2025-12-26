@@ -1,156 +1,186 @@
 .menu-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  overflow: hidden;
-  position: relative;
-}
-
-.menu-container::before {
-  content: '';
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  background: radial-gradient(circle at center, #1f293a 0%, #0f172a 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.particles-bg {
+  position: absolute;
+  width: 200%;
+  height: 200%;
   background: 
-    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px),
+    radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px);
+  background-size: 550px 550px, 350px 350px;
+  background-position: 0 0, 40px 60px;
+  animation: floatBackground 60s linear infinite;
+  opacity: 0.3;
   pointer-events: none;
 }
 
-.menu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 40px;
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  min-height: 80px;
+@keyframes floatBackground {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.menu-title {
-  margin: 0;
-  font-size: 2.2rem;
-  font-weight: 800;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  letter-spacing: 0.5px;
-  background: linear-gradient(135deg, #fff 0%, #e6e6e6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  flex: 1;
-  line-height: 1.3;
-}
-
-.wallet-section {
-  display: flex;
-  align-items: center;
-  margin-left: 20px;
-}
-
-.connect-btn {
-  --ton-connect-ui-font-family: inherit;
-  --ton-connect-ui-button-border-radius: 16px;
-  --ton-connect-ui-button-height: 48px;
-  --ton-connect-ui-button-background: linear-gradient(135deg, #0066ff 0%, #0052cc 100%);
-  --ton-connect-ui-button-color: white;
-  --ton-connect-ui-button-hover-background: linear-gradient(135deg, #0052cc 0%, #003d99 100%);
-  --ton-connect-ui-button-padding: 0 20px;
-  --ton-connect-ui-button-font-size: 14px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 140px;
-}
-
-.connect-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 102, 255, 0.3);
-}
-
-.menu-main {
-  flex: 1;
+.menu-content {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 32px;
-  padding: 40px;
   text-align: center;
-  position: relative;
-  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  padding: 20px;
 }
 
-.menu-main::before {
-  content: '';
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  filter: blur(40px);
-  opacity: 0.3;
-  z-index: -1;
+.icon-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
 .game-icon {
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
-  border-radius: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-  box-shadow: 
-    0 20px 40px rgba(67, 97, 238, 0.3),
-    inset 0 4px 8px rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
+  font-size: 5rem;
+  z-index: 2;
+  animation: floatIcon 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(76, 201, 240, 0.4));
 }
 
-.game-icon::after {
+@keyframes floatIcon {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(76, 201, 240, 0.3);
+  box-shadow: 0 0 15px rgba(76, 201, 240, 0.2);
+  animation: pulseRipple 3s linear infinite;
+}
+
+.pulse-ring.delayed {
+  animation-delay: 1.5s;
+}
+
+@keyframes pulseRipple {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.menu-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-white {
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.menu-subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.2rem;
+  margin-top: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 50px;
+}
+
+.action-area {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-container {
+  width: 240px;
+  text-align: center;
+}
+
+.loading-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.loading-bar::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-  animation: shine 3s infinite linear;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #4cc9f0, #4361ee);
+  animation: loadProgress 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  box-shadow: 0 0 10px rgba(67, 97, 238, 0.7);
 }
 
-@keyframes shine {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+.loading-text {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 1px;
 }
 
-.game-icon span {
-  font-size: 3rem;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+@keyframes loadProgress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.button-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .start-btn {
-  padding: 20px 48px;
-  font-size: 1.6rem;
+  padding: 18px 60px;
+  font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
   color: #fff;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
   border: none;
-  border-radius: 20px;
+  border-radius: 50px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
-    0 12px 32px rgba(0, 255, 136, 0.3),
-    0 4px 16px rgba(0, 0, 0, 0.1);
-  letter-spacing: 1px;
+    0 0 20px rgba(0, 255, 136, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
+  letter-spacing: 1.5px;
   position: relative;
   overflow: hidden;
 }
@@ -162,220 +192,45 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.7s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
 }
 
-.start-btn:hover:not(.disabled) {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 
-    0 20px 48px rgba(0, 255, 136, 0.4),
-    0 8px 24px rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, #00ff99 0%, #00dd77 100%);
+.start-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.6);
+  background: linear-gradient(135deg, #33ff99 0%, #00e676 100%);
 }
 
-.start-btn:hover:not(.disabled)::before {
+.start-btn:hover::before {
   left: 100%;
 }
 
-.start-btn:active:not(.disabled) {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 
-    0 8px 24px rgba(0, 255, 136, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.1);
+.start-btn:active {
+  transform: scale(0.98);
 }
 
-.start-btn.disabled {
-  background: linear-gradient(135deg, #666 0%, #444 100%);
-  cursor: not-allowed;
-  opacity: 0.6;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
 }
 
-.connect-message {
-  text-align: center;
-  font-size: 1.2rem;
-  max-width: 400px;
-  line-height: 1.5;
-  opacity: 0.9;
-  color: rgba(255, 255, 255, 0.8);
-  padding: 16px 24px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: fadeIn 0.5s ease-out;
+.fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Tablet (768px) */
 @media (max-width: 768px) {
-  .menu-header {
-    padding: 20px 24px;
-    flex-direction: row;
-    gap: 16px;
-    text-align: center;
-    align-items: center;
-  }
-
-  .menu-title {
-    font-size: 1.6rem;
-    margin-bottom: 0;
-    text-align: left;
-    line-height: 1.3;
-  }
-
-  .wallet-section {
-    width: auto;
-    justify-content: flex-end;
-  }
-
-  .connect-btn {
-    --ton-connect-ui-button-height: 40px;
-    --ton-connect-ui-button-padding: 0 16px;
-    --ton-connect-ui-button-font-size: 12px;
-    min-width: 120px;
-  }
-
-  .menu-main {
-    padding: 24px;
-    gap: 28px;
-  }
-
-  .game-icon {
-    width: 100px;
-    height: 100px;
-    border-radius: 24px;
-  }
-
-  .game-icon span {
-    font-size: 2.5rem;
-  }
-
-  .start-btn {
-    font-size: 1.4rem;
-    padding: 18px 40px;
-    border-radius: 18px;
-  }
-
-  .connect-message {
-    font-size: 1.1rem;
-    max-width: 320px;
-  }
-}
-
-/* Mobile (480px) */
-@media (max-width: 480px) {
-  .menu-container {
-    width: 100%;
-    height: 100%;
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  .menu-header {
-    padding: 16px 20px;
-    flex-direction: row;
-    gap: 12px;
-    text-align: left;
-    align-items: center;
-    min-height: 70px;
-    position: relative;
-  }
-
-  .menu-title {
-    font-size: 1.3rem;
-    flex: 1;
-    text-align: left;
-    line-height: 1.3;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    max-height: 3.4em;
-  }
-
-  .wallet-section {
-    width: auto;
-    position: static;
-    flex-shrink: 0;
-  }
-
-  .connect-btn {
-    --ton-connect-ui-button-height: 36px;
-    --ton-connect-ui-button-border-radius: 12px;
-    --ton-connect-ui-button-padding: 0 12px;
-    --ton-connect-ui-button-font-size: 11px;
-    min-width: 100px;
-  }
-
-  .menu-main {
-    padding: 20px;
-    gap: 24px;
-    height: calc(100vh - 70px);
-    justify-content: center;
-    overflow-y: auto;
-  }
-
-  .game-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: 20px;
-    margin-bottom: 12px;
-  }
-
-  .game-icon span {
-    font-size: 2rem;
-  }
-
-  .start-btn {
-    font-size: 1.2rem;
-    padding: 16px 32px;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 280px;
-  }
-
-  .connect-message {
-    font-size: 1rem;
-    max-width: 280px;
-    padding: 12px 20px;
-  }
-}
-
-/* Small Height Screens */
-@media (max-height: 600px) {
-  .menu-main {
-    justify-content: flex-start;
-    gap: 20px;
-    padding: 20px;
-    padding-top: 40px;
-  }
-
-  .game-icon {
-    width: 70px;
-    height: 70px;
-    margin-bottom: 12px;
-  }
-
-  .game-icon span {
-    font-size: 1.8rem;
-  }
-
-  .start-btn {
-    margin-bottom: 8px;
-    padding: 14px 28px;
-    font-size: 1.1rem;
-  }
+  .menu-title { font-size: 2.5rem; }
+  .game-icon { font-size: 4rem; }
+  .icon-wrapper { width: 100px; height: 100px; }
+  .start-btn { padding: 16px 48px; font-size: 1.2rem; }
 }

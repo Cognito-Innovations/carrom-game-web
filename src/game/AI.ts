@@ -35,7 +35,9 @@ export class AI {
     let bestPower = { x: 0, y: 0 };
     const aiColor = board.player2.color;
 
-    // Try to hit pieces that can be pocketed
+    // Safety check for empty arrays or undefined
+    if (!board.gattis || board.gattis.length === 0) return { target: null, power: { x: 0, y: 0 } };
+
     for (const gatti of board.gattis) {
       if (gatti.type === 'striker') continue;
 
@@ -53,7 +55,7 @@ export class AI {
       // Calculate angle from striker to gatti
       const dx = gatti.pos.x - striker.pos.x;
       const dy = gatti.pos.y - striker.pos.y;
-      const distToPiece = Math.sqrt(dx*dx + dy*dy);
+      const distToPiece = Math.sqrt(dx*dx + dy*dy) || 0.1; // Avoid divide by zero
       const angle = Math.atan2(dy, dx);
       
       let bestHoleScore = -1;
@@ -65,7 +67,7 @@ export class AI {
 
         const holeDx = hole.x - gatti.pos.x;
         const holeDy = hole.y - gatti.pos.y;
-        const distToHole = Math.sqrt(holeDx*holeDx + holeDy*holeDy);
+        const distToHole = Math.sqrt(holeDx*holeDx + holeDy*holeDy) || 0.1;
         const angleToHole = Math.atan2(holeDy, holeDx);
         
         // Check Cut Angle
@@ -101,7 +103,7 @@ export class AI {
            
            // Add a "smash" factor if angle is straight, less power if it's a cut shot
            const angleDiff = Math.abs(angle - Math.atan2(selectedHole.y - gatti.pos.y, selectedHole.x - gatti.pos.x));
-           if (angleDiff < 0.2) rawPower += 5; // Hit harder on straights
+           if (angleDiff < 0.2) rawPower += 5;
 
            // Clamp Power
            const powerFactor = Math.min(Math.max(rawPower, 18), 50);
@@ -131,8 +133,8 @@ export class AI {
 
         const dx = gatti.pos.x - striker.pos.x;
         const dy = gatti.pos.y - striker.pos.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < 30) continue; // Too close
+        const dist = Math.sqrt(dx*dx + dy*dy) || 0.1;
+        if (dist < 30) continue; 
 
         // Score based on distance (closer better) and type bonus
         let hitScore = (1 / dist) * 1000;
@@ -158,8 +160,11 @@ export class AI {
         bestPower = bestHitPower;
         bestScore = bestHitScore;
       } else {
-        // Ultimate fallback: aim at center mass of own pieces
-        let ownPiecesCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+        // Fallback Logic
+        const width = board.canvas ? board.canvas.width : 550;
+        const height = board.canvas ? board.canvas.height : 550;
+        
+        let ownPiecesCenter = { x: width / 2, y: height / 2 };
         let ownCount = 0;
         for (const gatti of board.gattis) {
           if (gatti.type === aiColor) {
@@ -187,6 +192,11 @@ export class AI {
   // Make AI move - position striker and aim
   makeMove(board: Board): { strikerX: number; strikerY: number; aimX: number; aimY: number } {
     const canvas = board.canvas;
+    // Safety check if canvas is not ready
+    if(!canvas) {
+        return { strikerX: 275, strikerY: 60, aimX: 275, aimY: 200 };
+    }
+
     const unit = 60;
     const start = unit + 20;
     const end = canvas.width - unit - 20;
@@ -217,7 +227,7 @@ export class AI {
         board.striker.pos.x = testX;
         const res = this.findBestTarget(board);
         // Scoring: pocketable high, then hittable
-        let score = res.target ? (res.target.type === 'queen' ? 100 : 10) : 0; 
+        const score = res.target ? (res.target.type === 'queen' ? 100 : 10) : 0; 
 
         if (score > bestMove.score || (score === bestMove.score && Math.random() > 0.8)) {
             bestMove = { ...res, score, sX: testX };
@@ -240,14 +250,14 @@ export class AI {
       // Pull back opposite to target direction
       const dx = target.pos.x - currentStrikerX;
       const dy = target.pos.y - currentStrikerY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      const distance = Math.sqrt(dx * dx + dy * dy) || 1;
       const pullDistance = Math.min(distance * 0.6, 120); 
       
-      aimX = currentStrikerX + (dx / distance) * pullDistance;  // Pull away from target
+      aimX = currentStrikerX + (dx / distance) * pullDistance;
       aimY = currentStrikerY + (dy / distance) * pullDistance;
     } else {
       // For power-based, pull back opposite to power direction
-      const powerDist = Math.sqrt(power.x * power.x + power.y * power.y);
+      const powerDist = Math.sqrt(power.x * power.x + power.y * power.y) || 1;
       if (powerDist > 0) {
         aimX = currentStrikerX + (power.x / powerDist) * 30;
         aimY = currentStrikerY + (power.y / powerDist) * 30;
@@ -257,15 +267,16 @@ export class AI {
       }
     }
 
-    // Add slight randomness
+    // Safety checks for NaN
+    if (isNaN(aimX)) aimX = currentStrikerX;
+    if (isNaN(aimY)) aimY = currentStrikerY + 50;
+
     aimX += (Math.random() - 0.5) * 4;
     aimY += (Math.random() - 0.5) * 4;
 
     // Clamp
     aimX = Math.max(-100, Math.min(canvas.width + 100, aimX));
     aimY = Math.max(-100, Math.min(canvas.height + 100, aimY));
-
-    // No inversion for top player - remove that bug
 
     return {
       strikerX: Math.max(start, Math.min(end, strikerX)),

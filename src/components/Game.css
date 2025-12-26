@@ -22,7 +22,6 @@
   width: 100%;
 }
 
-/* Responsive design for mobile and Farcaster mini-app */
 @media (max-width: 600px) {
   .game-container {
     padding: 0;
@@ -35,7 +34,6 @@
   }
 }
 
-/* Farcaster mini-app viewport */
 @media (max-width: 400px) {
   .game-container {
     width: 100vw;
@@ -47,7 +45,6 @@
   }
 }
 
-/* Prevent text selection during gameplay */
 .game-container {
   -webkit-user-select: none;
   -moz-user-select: none;

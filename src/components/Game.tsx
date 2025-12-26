@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useTonAddress } from '@tonconnect/ui-react';
 import { Board } from '../game/Board';
-import { CarromBoard } from './CarromBoard';
 import { Menu } from './Menu';
+import { CarromBoard } from './CarromBoard';
+import { GameOver } from './GameOver';
 import './Game.css';
 import './GameOver.css';
-import { GameOver } from './GameOver';
 
-interface GameProps {
-  telegramUser: any;
-}
-
-export const Game: React.FC<GameProps> = ({ telegramUser }) => {
+export const Game = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [board, setBoard] = useState<Board | null>(null);
   const [player1Score, setPlayer1Score] = useState(0);
@@ -19,10 +14,6 @@ export const Game: React.FC<GameProps> = ({ telegramUser }) => {
   const [currentTurn, setCurrentTurn] = useState('bottom');
   const [gameOver, setGameOver] = useState(false);
   const [finalScores, setFinalScores] = useState({ p1: 0, p2: 0, p1Pieces: 0, p2Pieces: 0 });
-
-  const tonAddress = useTonAddress();
-  const isWalletConnected = !!tonAddress;
-  const tg = window.Telegram?.WebApp;
 
   useEffect(() => {
     // Initialize board with temporary canvas for initial setup
@@ -45,32 +36,28 @@ export const Game: React.FC<GameProps> = ({ telegramUser }) => {
   }, []);
 
   const handleStartGame = () => {
-    if (!isWalletConnected) {
-      tg?.showAlert('Please connect your TON wallet first!');
-      return;
-    }
+    if (!board) return;
 
-    if (board) {
-      // Reset the board for new game
-      const canvas = document.createElement('canvas');
-      canvas.width = 550;
-      canvas.height = 550;
-      const ctx = canvas.getContext('2d');
-      const backCanvas = document.createElement('canvas');
-      backCanvas.width = 550;
-      backCanvas.height = 550;
-      const backCtx = backCanvas.getContext('2d');
+    // Reset the board for new game
+    const canvas = document.createElement('canvas');
+    canvas.width = 550;
+    canvas.height = 550;
+    const ctx = canvas.getContext('2d');
 
-      if (ctx && backCtx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        backCtx.clearRect(0, 0, canvas.width, canvas.height);
+    const backCanvas = document.createElement('canvas');
+    backCanvas.width = 550;
+    backCanvas.height = 550;
+    const backCtx = backCanvas.getContext('2d');
 
-        board.init();
-        board.draw(backCtx);
-        board.arrangeGattis();
-        setGameStarted(true);
-      }
-    }
+    if (ctx && backCtx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      backCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+      board.init();
+      board.draw(backCtx);
+      board.arrangeGattis();
+      setGameStarted(true);
+    }  
   };
 
   const handleScoreUpdate = (p1Score: number, p2Score: number) => {
@@ -143,7 +130,6 @@ export const Game: React.FC<GameProps> = ({ telegramUser }) => {
       {!gameStarted && (
         <Menu
           onStartGame={handleStartGame}
-          isWalletConnected={isWalletConnected}
         />
       )}
       {gameStarted && (
@@ -162,9 +148,6 @@ export const Game: React.FC<GameProps> = ({ telegramUser }) => {
           player1Pieces={finalScores.p1Pieces}
           player2Pieces={finalScores.p2Pieces}
           onRestart={handleRestart}
-          tonAddress={tonAddress}
-          telegramUser={telegramUser}
-          onMintNFT={() => console.log('NFT claimed')}
         />
       )}
     </div>
