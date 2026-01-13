@@ -35,9 +35,7 @@ export class AI {
     let bestPower = { x: 0, y: 0 };
     const aiColor = board.player2.color;
 
-    // Safety check for empty arrays or undefined
-    if (!board.gattis || board.gattis.length === 0) return { target: null, power: { x: 0, y: 0 } };
-
+    // Try to hit pieces that can be pocketed
     for (const gatti of board.gattis) {
       if (gatti.type === 'striker') continue;
 
@@ -55,7 +53,7 @@ export class AI {
       // Calculate angle from striker to gatti
       const dx = gatti.pos.x - striker.pos.x;
       const dy = gatti.pos.y - striker.pos.y;
-      const distToPiece = Math.sqrt(dx*dx + dy*dy) || 0.1; // Avoid divide by zero
+      const distToPiece = Math.sqrt(dx*dx + dy*dy);
       const angle = Math.atan2(dy, dx);
       
       let bestHoleScore = -1;
@@ -67,7 +65,7 @@ export class AI {
 
         const holeDx = hole.x - gatti.pos.x;
         const holeDy = hole.y - gatti.pos.y;
-        const distToHole = Math.sqrt(holeDx*holeDx + holeDy*holeDy) || 0.1;
+        const distToHole = Math.sqrt(holeDx*holeDx + holeDy*holeDy);
         const angleToHole = Math.atan2(holeDy, holeDx);
         
         // Check Cut Angle
@@ -133,7 +131,7 @@ export class AI {
 
         const dx = gatti.pos.x - striker.pos.x;
         const dy = gatti.pos.y - striker.pos.y;
-        const dist = Math.sqrt(dx*dx + dy*dy) || 0.1;
+        const dist = Math.sqrt(dx*dx + dy*dy);
         if (dist < 30) continue; 
 
         // Score based on distance (closer better) and type bonus
@@ -160,11 +158,8 @@ export class AI {
         bestPower = bestHitPower;
         bestScore = bestHitScore;
       } else {
-        // Fallback Logic
-        const width = board.canvas ? board.canvas.width : 550;
-        const height = board.canvas ? board.canvas.height : 550;
-        
-        let ownPiecesCenter = { x: width / 2, y: height / 2 };
+        // Ultimate fallback: aim at center mass of own pieces
+        let ownPiecesCenter = { x: canvas.width / 2, y: canvas.height / 2 };
         let ownCount = 0;
         for (const gatti of board.gattis) {
           if (gatti.type === aiColor) {
@@ -192,11 +187,6 @@ export class AI {
   // Make AI move - position striker and aim
   makeMove(board: Board): { strikerX: number; strikerY: number; aimX: number; aimY: number } {
     const canvas = board.canvas;
-    // Safety check if canvas is not ready
-    if(!canvas) {
-        return { strikerX: 275, strikerY: 60, aimX: 275, aimY: 200 };
-    }
-
     const unit = 60;
     const start = unit + 20;
     const end = canvas.width - unit - 20;
@@ -227,7 +217,7 @@ export class AI {
         board.striker.pos.x = testX;
         const res = this.findBestTarget(board);
         // Scoring: pocketable high, then hittable
-        const score = res.target ? (res.target.type === 'queen' ? 100 : 10) : 0; 
+        let score = res.target ? (res.target.type === 'queen' ? 100 : 10) : 0; 
 
         if (score > bestMove.score || (score === bestMove.score && Math.random() > 0.8)) {
             bestMove = { ...res, score, sX: testX };
@@ -250,14 +240,14 @@ export class AI {
       // Pull back opposite to target direction
       const dx = target.pos.x - currentStrikerX;
       const dy = target.pos.y - currentStrikerY;
-      const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+      const distance = Math.sqrt(dx * dx + dy * dy);
       const pullDistance = Math.min(distance * 0.6, 120); 
       
       aimX = currentStrikerX + (dx / distance) * pullDistance;
       aimY = currentStrikerY + (dy / distance) * pullDistance;
     } else {
       // For power-based, pull back opposite to power direction
-      const powerDist = Math.sqrt(power.x * power.x + power.y * power.y) || 1;
+      const powerDist = Math.sqrt(power.x * power.x + power.y * power.y);
       if (powerDist > 0) {
         aimX = currentStrikerX + (power.x / powerDist) * 30;
         aimY = currentStrikerY + (power.y / powerDist) * 30;
@@ -267,10 +257,7 @@ export class AI {
       }
     }
 
-    // Safety checks for NaN
-    if (isNaN(aimX)) aimX = currentStrikerX;
-    if (isNaN(aimY)) aimY = currentStrikerY + 50;
-
+    // Add slight randomness
     aimX += (Math.random() - 0.5) * 4;
     aimY += (Math.random() - 0.5) * 4;
 

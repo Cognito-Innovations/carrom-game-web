@@ -53,7 +53,7 @@ export class Board {
     this.turn = 'bottom';
     this.next = 'top';
     this.player1 = new Player('Player 1', 0, 'white');
-    this.player2 = new Player('Player AI', 1, 'black'); 
+    this.player2 = new Player('Player 2 (Computer)', 1, 'black'); 
     this.queenMode = false;
     this.queenAwaitingCover = '';
     this.isGameOver = false;
@@ -73,7 +73,7 @@ export class Board {
       this.holes.push(new Hole(i, this.canvas.width, this.canvas.height));
     }
     this.player1 = new Player('Player 1', 0, 'white');
-    this.player2 = new Player('Player AI', 1, 'black');
+    this.player2 = new Player('Player 2 (Computer)', 1, 'black');
     this.state = 'first';
     this.turn = 'bottom'; 
     this.next = 'top';
@@ -382,7 +382,7 @@ export class Board {
 
   getCurrentPlayer(): Player | undefined {
     if (this.turn === 'bottom') return this.player1; // Player 1 is at bottom
-    if (this.turn === 'top') return this.player2; // Player AI is at top
+    if (this.turn === 'top') return this.player2; // Player 2 (Computer) is at top
     return undefined;
   }
 

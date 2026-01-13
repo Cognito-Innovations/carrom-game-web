@@ -21,8 +21,8 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
   const [showToast, setShowToast] = useState(false);
 
   const aiRef = useRef<AI>(new AI());
-  const isAiProcessing = useRef(false);
-  const toastTimeoutRef = useRef<NodeJS.Timeout>();
+  const aiMoveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showGameMessage = (msg: string) => {
     setToastMessage(msg);
@@ -49,70 +49,10 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
     board.canvas = canvas;
     board.ctx = ctx;
 
-    const executeAIMove = async () => {
-      try {
-        // Double check it's still AI turn
-        if (!board.isPlayer2Turn()) {
-           isAiProcessing.current = false;
-           return;
-        }
-
-        // Small delay to make it feel natural
-        await new Promise(r => setTimeout(r, 600));
-
-        let aiMove;
-        try {
-          aiMove = aiRef.current.makeMove(board);
-          
-          if (!aiMove || typeof aiMove.strikerX !== 'number' || isNaN(aiMove.strikerX)) {
-            throw new Error("Invalid AI coordinates calculated");
-          }
-        } catch (err) {
-          console.warn("AI Calculation Error, using fallback:", err);
-          // Safe Fallback
-          aiMove = {
-            strikerX: canvas.width / 2,
-            strikerY: 60,
-            aimX: canvas.width / 2,
-            aimY: 200
-          };
-        }
-
-        // 1. Animate Striker Positioning
-        board.strikerAnimStartPos = new Point(board.striker.pos.x, board.striker.pos.y);
-        board.strikerTargetPos = new Point(aiMove.strikerX, aiMove.strikerY);
-        board.isAnimatingStriker = true;
-        board.startAnimTime = performance.now();
-
-        // Wait for positioning to finish (approx 300ms + buffer)
-        setTimeout(() => {
-           // 2. Setup Aiming
-           board.state = 'second';
-           board.target.flag = true;
-           board.cursor.initial = new Point(board.striker.pos.x, board.striker.pos.y);
-           
-           const pullBackPoint = new Point(aiMove.aimX, aiMove.aimY);
-           board.aimAnimStartPos = new Point(board.striker.pos.x, board.striker.pos.y);
-           board.aimTargetPos = pullBackPoint;
-           board.isAnimatingAim = true;
-           board.aimStartTime = performance.now();
-           
-           // Reset processing flag so next turn can run
-           isAiProcessing.current = false;
-        }, 400);
-
-      } catch (e) {
-        console.error("Critical AI Failure:", e);
-        isAiProcessing.current = false;
-        // Force next turn if AI fails hard to prevent freeze
-        board.nextTurn(); 
-      }
-    };
-
     const update = () => {
       const now = performance.now();
 
-      //Handle Animations
+      // Handle striker position animation
       if (board.isAnimatingStriker && board.strikerAnimStartPos && board.strikerTargetPos) {
         const elapsed = now - board.startAnimTime;
         const t = Math.min(1, elapsed / board.animationDuration);
@@ -123,6 +63,8 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
           board.striker.pos.x = board.strikerTargetPos.x;
           board.striker.pos.y = board.strikerTargetPos.y;
           board.isAnimatingStriker = false;
+          board.strikerAnimStartPos = undefined;
+          board.strikerTargetPos = undefined;
         }
       }
 
@@ -149,6 +91,8 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
           board.state = 'third';
           board.target.flag = false;
           board.isAnimatingAim = false;
+          board.aimAnimStartPos = undefined;
+          board.aimTargetPos = undefined;
         }
       }
 
@@ -184,7 +128,10 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
                 return;
               }
 
-              if ((isPlayer1 && gatti.type === 'white') || (!isPlayer1 && gatti.type === 'black')) {
+              const isPlayer1Scored = isPlayer1 && gatti.type === 'white';
+              const isPlayer2Scored = !isPlayer1 && gatti.type === 'black';
+
+              if (isPlayer1Scored || isPlayer2Scored) {
                 showGameMessage(`Nice Shot! Second Chance 🎯`);
               }
             }
@@ -198,50 +145,50 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
       }
 
       if (board.state === 'first') {
-        // A. Manual Player Logic
+        const unit = 60;
+        const start = unit;
+        const end = canvas.width - unit;
+        const baseY = board.isPlayer1Turn() ? canvas.height - unit : unit;
+        
         if (board.isPlayer1Turn()) {
-           isAiProcessing.current = false; // Ensure AI flag is reset
-           
-           const unit = 60;
-           const start = unit;
-           const end = canvas.width - unit;
-           const baseY = canvas.height - unit;
-           
-           const x = board.cursor.final.x;
-           if (x > start && x < end) {
-             board.striker.pos.x = x;
-           }
-           if (!board.isAnimatingStriker) {
-             board.striker.pos.y = baseY;
-           }
-        } 
-        // B. AI Trigger Logic (The Fix)
-        else if (board.isPlayer2Turn() && !board.isAnimatingStriker && !isAiProcessing.current) {
-           isAiProcessing.current = true;
-           executeAIMove();
+          // Player 1 (manual) - follow cursor
+          const x = board.cursor.final.x;
+          if (x > start && x < end) {
+            board.striker.pos.x = x;
+          }
+          if (!board.isAnimatingStriker) {
+            board.striker.pos.y = baseY;
+          }
         }
-
+        // AI positioning handled via timeouts and animations
       } else if (board.state === 'third') {
-        // Check if everything stopped
-        let allStopped = true;
-        if(board.striker.state === 'motion') allStopped = false;
-        for (const g of board.gattis) {
-          if (g.state === 'motion') { allStopped = false; break; }
+        let flag = true;
+        if(board.striker.state === 'motion') flag = false;
+        for (let i = 0; i < board.gattis.length; i++) {
+          if (board.gattis[i].state === 'motion') {
+            flag = false;
+            break;
+          }
         }
-        if (allStopped) {
+        if (flag) {
+          // Check if game is over
           if (board.checkGameOver()) {
-            onGameOver(board.player1.score, board.player2.score, board.player1.pocketed.length, board.player2.pocketed.length);
+            onGameOver(
+              board.player1.score,
+              board.player2.score,
+              board.player1.pocketed.length,
+              board.player2.pocketed.length
+            );
             return;
           }
           
           // Animate striker to base line Y if needed (for repeat turns)
           const baseY = board.turn === 'bottom' ? canvas.height - 60 : 60;
           if (Math.abs(board.striker.pos.y - baseY) > 1 && !board.isAnimatingStriker) {
-             // Return striker to base
-             board.strikerAnimStartPos = new Point(board.striker.pos.x, board.striker.pos.y);
-             board.strikerTargetPos = new Point(board.striker.pos.x, baseY);
-             board.isAnimatingStriker = true;
-             board.startAnimTime = performance.now();
+            board.strikerAnimStartPos = new Point(board.striker.pos.x, board.striker.pos.y);
+            board.strikerTargetPos = new Point(board.striker.pos.x, baseY);
+            board.isAnimatingStriker = true;
+            board.startAnimTime = performance.now();
           }
           
           // Decide next turn based on whether own gatti was pocketed this shot
@@ -254,21 +201,48 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
           
           const needsSwitch = board.next !== board.turn;
           if (needsSwitch) {
-            // Animate to center then to other side
+            // Animate to new base position for turn switch
             const newBaseY = board.next === 'bottom' ? canvas.height - 60 : 60;
             const newBaseX = canvas.width / 2;
             board.strikerAnimStartPos = new Point(board.striker.pos.x, board.striker.pos.y);
             board.strikerTargetPos = new Point(newBaseX, newBaseY);
             board.isAnimatingStriker = true;
-            board.startAnimTime = performance.now();     
+            board.startAnimTime = performance.now();
             board.nextTurn();
             onTurnChange(board.turn);
-            isAiProcessing.current = false; // Reset AI flag on turn switch
           }
           
           board.didPocketOwnThisTurn = false;
           
           board.state = 'first';
+          setTimeout(() => {
+            // If it's Player 2's turn (AI), automatically make the move
+            if (board.isPlayer2Turn()) {
+              setTimeout(() => {
+                // Animate striker to AI position
+                const aiMove = aiRef.current.makeMove(board);
+                board.strikerAnimStartPos = new Point(board.striker.pos.x, board.striker.pos.y);
+                board.strikerTargetPos = new Point(aiMove.strikerX, aiMove.strikerY);
+                board.isAnimatingStriker = true;
+                board.startAnimTime = performance.now();
+                
+                // Wait for position animation then aim
+                setTimeout(() => {
+                  board.state = 'second';
+                  board.target.flag = true;
+                  // Set cursor initial position for aiming
+                  board.cursor.initial = new Point(board.striker.pos.x, board.striker.pos.y);
+                  
+                  // The aimPoint from AI is the pull-back point
+                  const pullBackPoint = new Point(aiMove.aimX, aiMove.aimY);
+                  board.aimAnimStartPos = new Point(board.striker.pos.x, board.striker.pos.y);
+                  board.aimTargetPos = pullBackPoint;
+                  board.isAnimatingAim = true;
+                  board.aimStartTime = performance.now();
+                }, board.animationDuration + 100);
+              }, 200);
+            }
+          }, 500);
         }
       }
 
@@ -279,17 +253,25 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
     update();
 
     return () => {
-      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (aiMoveTimeoutRef.current) {
+        clearTimeout(aiMoveTimeoutRef.current);
+      }
     };
   }, [board, gameStarted, onScoreUpdate, onTurnChange, onGameOver]);
 
   useEffect(() => {
     if (!backCanvasRef.current || !gameStarted) return;
-    const backCtx = backCanvasRef.current.getContext('2d');
-    if (backCtx) {
-        backCtx.clearRect(0, 0, backCanvasRef.current.width, backCanvasRef.current.height);
-        board.draw(backCtx);
-    }
+
+    const backCanvas = backCanvasRef.current;
+    const backCtx = backCanvas.getContext('2d');
+
+    if (!backCtx) return;
+
+    backCtx.clearRect(0, 0, backCanvas.width, backCanvas.height);
+    board.draw(backCtx);
   }, [board, gameStarted]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -359,18 +341,18 @@ export const CarromBoard: React.FC<CarromBoardProps> = ({ board, gameStarted, on
     board.target.flag = false;
 
     if (board.state === 'first') {
-        let flag = true;
-        for (let i = 1; i < board.gattis.length; i++) {
-          if (ut.checkCirCollission(board.striker, board.gattis[i])) {
-            flag = false;
-            break;
-          }
-        }
-        if (flag) {
-          board.state = 'second';
-          board.target.flag = true;
+      let flag = true;
+      for (let i = 1; i < board.gattis.length; i++) {
+        if (ut.checkCirCollission(board.striker, board.gattis[i])) {
+          flag = false;
+          break;
         }
       }
+      if (flag) {
+        board.state = 'second';
+        board.target.flag = true;
+      }
+    }
   };
 
   const renderPieces = (player: typeof board.player1) => (

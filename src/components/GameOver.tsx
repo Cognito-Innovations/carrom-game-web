@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { appendWinnerToSheet } from '../utils/googleSheets';
 import './GameOver.css';
 
 interface GameOverProps {
@@ -7,6 +8,7 @@ interface GameOverProps {
   player1Pieces: number;
   player2Pieces: number;
   onRestart: () => void;
+  googleUser: any;
 }
 
 export const GameOver: React.FC<GameOverProps> = ({
@@ -14,20 +16,26 @@ export const GameOver: React.FC<GameOverProps> = ({
   player2Score,
   player1Pieces,
   player2Pieces,
-  onRestart
+  onRestart,
+  googleUser,
 }) => {
+  const hasLoggedRef = useRef(false);
+
   let winner = '';
   let title = '';
+  let player1Won = false;
 
   if (player1Score > player2Score) {
     winner = 'Player 1';
     title = 'You Win!';
+    player1Won = true;
   } else if (player2Score > player1Score) {
     winner = 'Player AI';
     title = 'Game Over';
   } else if (player1Pieces > player2Pieces) {
     winner = 'Player 1';
     title = 'You Win!';
+    player1Won = true;
   } else if (player2Pieces > player1Pieces) {
     winner = 'Player AI';
     title = 'Game Over';
@@ -36,10 +44,26 @@ export const GameOver: React.FC<GameOverProps> = ({
     title = "It's a Tie!";
   }
 
+  useEffect(() => {
+    if (!player1Won) return;
+    if (!googleUser?.email) return;
+    if (hasLoggedRef.current) return;
+
+    hasLoggedRef.current = true;
+
+    appendWinnerToSheet({
+      email: googleUser.email,
+      score: player1Score,
+      timestamp: new Date().toISOString(),
+    });
+  }, [player1Won, googleUser, player1Score]);
+
   return (
     <div className="game-over-overlay">
       <div className="game-over-box">
         <h2>{title}</h2>
+        {googleUser && <p>Welcome back, {googleUser.name}!</p>}
+
         <div className="final-scores">
           <div className="score-item">
             <h3>Player 1</h3>
@@ -55,7 +79,6 @@ export const GameOver: React.FC<GameOverProps> = ({
         <div className="winner">
           <h2>{winner === 'Tie' ? "It's a Tie!" : `${winner} Wins!`}</h2>
         </div>
-        
         <button className="restart-btn" onClick={onRestart}>
           Play Again
         </button>
