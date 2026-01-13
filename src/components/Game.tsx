@@ -23,6 +23,12 @@ export const Game: React.FC<GameProps> = ({ googleUser, setGoogleUser }) => {
   const isLoggedIn = !!googleUser;
 
   useEffect(() => {
+    if (googleUser && board && !gameStarted) {
+      handleStartGame();
+    }
+  }, [googleUser, board]);
+
+  useEffect(() => {
     // Initialize board with temporary canvas for initial setup
     const canvas = document.createElement('canvas');
     canvas.width = 550;
@@ -43,33 +49,28 @@ export const Game: React.FC<GameProps> = ({ googleUser, setGoogleUser }) => {
   }, []);
 
   const handleStartGame = () => {
-    if (!isLoggedIn) {
-      window.alert('Please login with Google first!');
-      return;
+    if (!googleUser || !board) return;
+
+    // Reset the board for new game
+    const canvas = document.createElement('canvas');
+    canvas.width = 550;
+    canvas.height = 550;
+    const ctx = canvas.getContext('2d');
+
+    const backCanvas = document.createElement('canvas');
+    backCanvas.width = 550;
+    backCanvas.height = 550;
+    const backCtx = backCanvas.getContext('2d');
+
+    if (ctx && backCtx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      backCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+      board.init();
+      board.draw(backCtx);
+      board.arrangeGattis();
+      setGameStarted(true);
     }
-
-    if (board) {
-      // Reset the board for new game
-      const canvas = document.createElement('canvas');
-      canvas.width = 550;
-      canvas.height = 550;
-      const ctx = canvas.getContext('2d');
-
-      const backCanvas = document.createElement('canvas');
-      backCanvas.width = 550;
-      backCanvas.height = 550;
-      const backCtx = backCanvas.getContext('2d');
-
-      if (ctx && backCtx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        backCtx.clearRect(0, 0, canvas.width, canvas.height);
-
-        board.init();
-        board.draw(backCtx);
-        board.arrangeGattis();
-        setGameStarted(true);
-      }
-    }  
   };
 
   const handleScoreUpdate = (p1Score: number, p2Score: number) => {
