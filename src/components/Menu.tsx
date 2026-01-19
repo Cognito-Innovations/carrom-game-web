@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
-import { trackStartGame } from '../utils/analytics';
+import { trackStartGame, trackMetaEvent } from '../utils/analytics';
 import './Menu.css';
 
 interface MenuProps {
@@ -17,6 +17,7 @@ export const Menu: React.FC<MenuProps> = ({
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       trackStartGame('google_login');
+      trackMetaEvent('LoginButtonClick', { method: 'google_login' });
 
       fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: {
@@ -36,6 +37,7 @@ export const Menu: React.FC<MenuProps> = ({
 
   const handleClick = () => {
     trackStartGame('menu_button');
+    trackMetaEvent('LoginButtonClick', { method: 'menu_button' });
 
     if (isLoggedIn) {
       onStartGame();

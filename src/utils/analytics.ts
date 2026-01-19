@@ -36,3 +36,9 @@ export const trackStartGame = (method: "menu_button" | "google_login") => {
     method,
   });
 };
+
+export const trackMetaEvent = (eventName: string, params?: object) => {
+  if (typeof window.fbq !== 'function') return;
+
+  window.fbq('trackCustom', eventName, params);
+};

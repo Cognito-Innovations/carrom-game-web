@@ -28,7 +28,7 @@
     min-height: 100vh;
     height: 100vh;
     overflow: hidden;
-    justify-content: flex-start;
+    justify-content: center;
     padding-top: 0;
     background: transparent;
   }
