@@ -48,12 +48,15 @@ export class AI {
           continue; 
       }
 
-      if (!this.isPathClear(board, striker.pos, gatti.pos, [gatti])) continue;
-
-      // Calculate angle from striker to gatti
+      // Safety check: if striker is somehow overlapping, skip this calc to prevent NaN
       const dx = gatti.pos.x - striker.pos.x;
       const dy = gatti.pos.y - striker.pos.y;
       const distToPiece = Math.sqrt(dx*dx + dy*dy);
+      
+      if (distToPiece < 1) continue;
+
+      if (!this.isPathClear(board, striker.pos, gatti.pos, [gatti])) continue;
+
       const angle = Math.atan2(dy, dx);
       
       let bestHoleScore = -1;
@@ -159,7 +162,7 @@ export class AI {
         bestScore = bestHitScore;
       } else {
         // Ultimate fallback: aim at center mass of own pieces
-        let ownPiecesCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+        const ownPiecesCenter = { x: board.canvas.width / 2, y: board.canvas.height / 2 };
         let ownCount = 0;
         for (const gatti of board.gattis) {
           if (gatti.type === aiColor) {
@@ -193,8 +196,33 @@ export class AI {
 
     const strikerY = board.turn === 'bottom' ? canvas.height - unit : unit;
     
-    const randomPos = this.util.random(start, end);
-    let strikerX = randomPos;
+    // Helper to check if a specific position overlaps with ANY gatti
+    const isPositionValid = (x: number, y: number): boolean => {
+      const strikerR = board.striker.radius || 22; 
+      
+      for (const gatti of board.gattis) {
+        if (gatti.type === 'striker') continue;
+        const dist = Math.sqrt((x - gatti.pos.x)**2 + (y - gatti.pos.y)**2);
+        // If distance is less than sum of radii + buffer, it's an overlap
+        if (dist < strikerR + gatti.radius + 2) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    let strikerX = this.util.random(start, end);
+    if (!isPositionValid(strikerX, strikerY)) {
+        let found = false;
+        for (let i = start; i < end; i += 5) {
+            if (isPositionValid(i, strikerY)) {
+                strikerX = i;
+                found = true;
+                break;
+            }
+        }
+        if (!found) strikerX = canvas.width / 2;
+    }
 
     let bestMove = { target: null as Gatti | null, power: {x:0, y:0}, score: -1, sX: strikerX };
     
@@ -209,15 +237,28 @@ export class AI {
       end - (end-start)/4,
       this.util.random(start, end)
     ]; 
+
+    const validTestPositions = testPositions.filter(pos => isPositionValid(pos, strikerY));
+
+    if (validTestPositions.length === 0) {
+       for (let i = start; i <= end; i+=15) {
+           if (isPositionValid(i, strikerY)) {
+               validTestPositions.push(i);
+               if (validTestPositions.length >= 3) break;
+           }
+       }
+    }
+
+    if (validTestPositions.length === 0) validTestPositions.push(strikerX);
     
     const originalStrikerPos = { x: board.striker.pos.x, y: board.striker.pos.y };
     board.striker.pos.y = strikerY;
 
-    for (const testX of testPositions) {
+    for (const testX of validTestPositions) {
         board.striker.pos.x = testX;
         const res = this.findBestTarget(board);
         // Scoring: pocketable high, then hittable
-        let score = res.target ? (res.target.type === 'queen' ? 100 : 10) : 0; 
+        const score = res.target ? (res.target.type === 'queen' ? 100 : 10) : 0; 
 
         if (score > bestMove.score || (score === bestMove.score && Math.random() > 0.8)) {
             bestMove = { ...res, score, sX: testX };
@@ -241,10 +282,13 @@ export class AI {
       const dx = target.pos.x - currentStrikerX;
       const dy = target.pos.y - currentStrikerY;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const pullDistance = Math.min(distance * 0.6, 120); 
+
+      const safeDistance = distance === 0 ? 1 : distance;
       
-      aimX = currentStrikerX + (dx / distance) * pullDistance;
-      aimY = currentStrikerY + (dy / distance) * pullDistance;
+      const pullDistance = Math.min(safeDistance * 0.6, 120); 
+      
+      aimX = currentStrikerX + (dx / safeDistance) * pullDistance;
+      aimY = currentStrikerY + (dy / safeDistance) * pullDistance;
     } else {
       // For power-based, pull back opposite to power direction
       const powerDist = Math.sqrt(power.x * power.x + power.y * power.y);
