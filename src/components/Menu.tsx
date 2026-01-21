@@ -51,7 +51,7 @@ export const Menu: React.FC<MenuProps> = ({
     <div className="menu-container">
       <main className="menu-main">
         <div className="title-section">
-          <h1 className="menu-title">MASTER <span className="title-highlight">THE BOARD</span></h1>
+          <h1 className="menu-title text-center">MASTER THE BOARD</h1>
           <p className="menu-subtitle">Think you're good at board games?</p>
         </div>
 
