@@ -1,4 +1,5 @@
 import ReactGA from "react-ga4";
+import { FIREBASE_DB_API } from "./googleSheets";
 
 let analyticsInitialized = false;
 
@@ -42,3 +43,14 @@ export const trackMetaEvent = (eventName: string, params?: object) => {
 
   window.fbq('trackCustom', eventName, params);
 };
+
+
+export const trackUsers = async (email: string) => {
+    const timestamp = Date.now();
+
+    await fetch(`${FIREBASE_DB_API}/carrom/${timestamp}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+    });
+}

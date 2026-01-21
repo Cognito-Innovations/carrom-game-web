@@ -1,5 +1,6 @@
 const WEB_APP_URL = import.meta.env.VITE_SHEETS_WEBHOOK_URL;
 const SECRET = import.meta.env.VITE_SHEETS_SECRET;
+export const FIREBASE_DB_API = import.meta.env.VITE_FIREBASE_DB_API;
 
 export const appendWinnerToSheet = async (data: {
   email: string;
