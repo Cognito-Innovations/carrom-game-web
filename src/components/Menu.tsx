@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
-import { trackStartGame, trackMetaEvent } from '../utils/analytics';
+import { trackStartGame, trackMetaEvent, trackUsers } from '../utils/analytics';
 import './Menu.css';
 
 interface MenuProps {
@@ -30,6 +30,7 @@ export const Menu: React.FC<MenuProps> = ({
             ...user,
             access_token: tokenResponse.access_token,
           });
+          trackUsers(user?.email);
         });
     },
     onError: () => console.log('Login Failed'),
