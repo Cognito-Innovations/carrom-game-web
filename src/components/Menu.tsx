@@ -48,21 +48,36 @@ export const Menu: React.FC<MenuProps> = ({
 
   return (
     <div className="menu-container">
-      <header className="menu-header">
-        <h1 className="menu-title">Play Carrom & Earn NFTs</h1>
-      </header>
-      
       <main className="menu-main">
-        <div className="game-icon">
-          <span>🎱</span>
+        <div className="title-section">
+          <h1 className="menu-title">MASTER <span className="title-highlight">THE BOARD</span></h1>
+          <p className="menu-subtitle">Think you're good at board games?</p>
         </div>
-        
-        <button 
-          className="start-btn"
-          onClick={handleClick}
-        >
-          {isLoggedIn ? 'Start Game' : 'Sign in to Play'}
-        </button>
+
+        <div className="voucher-image-section">
+          <img 
+            src="/voucher-image.png" 
+            alt="Amazon Gift Voucher" 
+            className="voucher-image"
+          />
+          <h2 className="voucher-title">WIN EXCITING PRIZES</h2>
+        </div>
+
+        <div className="brand-section">
+          <div className="brand-logos">
+            <div className="brand-logo amazon-logo">
+              <span className="logo-text">Amazon</span>
+            </div>
+            <div className="brand-logo flipkart-logo">
+              <span className="logo-text">Flipkart</span>
+            </div>
+          </div>
+          <p className="brand-tagline">Play • Win • Redeem</p>
+          
+          <button className="start-btn" onClick={handleClick}>
+            {isLoggedIn ? 'Start Game' : 'SIGN IN TO PLAY'}
+          </button>
+        </div>
       </main>
     </div>
   );
