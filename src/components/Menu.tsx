@@ -160,6 +160,13 @@ export const Menu: React.FC<MenuProps> = ({
   return (
     <div className="menu-container">
       <main className="menu-main">
+        {/* 1. Value Proposition First - UI/UX Best Practice */}
+        <div className="title-section">
+          <h1 className="menu-title text-center">MASTER THE BOARD</h1>
+          <p className="menu-subtitle">Think you're good at board games?</p>
+        </div>
+
+        {/* 2. Social Proof Second - Builds Trust */}
         {statsLoaded && (
           <div className="stats-section">
             <div className="stat-item stat-item-playing">
@@ -171,11 +178,22 @@ export const Menu: React.FC<MenuProps> = ({
             </div>
           </div>
         )}
-        <div className="title-section">
-          <h1 className="menu-title text-center">MASTER THE BOARD</h1>
-          <p className="menu-subtitle">Think you're good at board games?</p>
+
+        {/* Republic Day Banner - Promotional Offer */}
+        <div className="republic-day-banner">
+          <div className="republic-day-content">
+            <div className="republic-day-header">
+              <span className="republic-day-flag">🇮🇳</span>
+              <span className="republic-day-label">REPUBLIC DAY SALE</span>
+              <span className="republic-day-flag">🇮🇳</span>
+            </div>
+            <div className="republic-day-offer-wrapper">
+              <span className="republic-day-offer">GET FREE ₹500 SHOPPING GIFT CARD!</span>
+            </div>
+          </div>
         </div>
 
+        {/* 3. Visual Proof - Prize Image */}
         <div className="voucher-image-section">
           <img 
             src="/voucher-image.png" 
@@ -185,6 +203,7 @@ export const Menu: React.FC<MenuProps> = ({
           <h2 className="voucher-title">WIN EXCITING PRIZES</h2>
         </div>
 
+        {/* 4. Brand Details & CTA */}
         <div className="brand-section">
           <div className="brand-logos">
             <div className="brand-logo amazon-logo">
