@@ -194,10 +194,10 @@ export const Menu: React.FC<MenuProps> = ({
               <span className="logo-text">Flipkart</span>
             </div>
           </div>
-          <p className="brand-tagline">Play • Win • Redeem</p>
+          <p className="brand-tagline">Play • Enjoy • Redeem</p>
           
           <button className="start-btn" onClick={handleClick}>
-            {isLoggedIn ? 'Start Game' : 'SIGN IN TO PLAY'}
+            {isLoggedIn ? 'Start Game' : 'PLAY NOW'}
           </button>
         </div>
       </main>
