@@ -1,10 +1,10 @@
 export type GattiType = 'black' | 'white' | 'queen' | 'striker';
 
 export const typeColor: Record<GattiType, string> = {
-  black: '#3366ff',
-  white: 'purple',
-  queen: 'red',
-  striker: 'green',
+  black: '#1a1a1a',      // distinct black
+  white: '#bdbdbd',      // darker white
+  queen: '#ff3333',
+  striker: '#00897B',   // Striker Teal
 };
 
 export const typeSize: Record<GattiType, number> = {

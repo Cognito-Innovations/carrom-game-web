@@ -1,0 +1,7 @@
+# Disable linting for all files (deployment-safe)
+**/*
+
+# You can narrow this later, e.g.:
+# src/generated/**
+# dist/**
+

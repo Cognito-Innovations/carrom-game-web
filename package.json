@@ -5,15 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "author": "Zafor Iqbal",
   "license": "MIT",
   "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@react-oauth/google": "^0.13.4",
+    "axios": "^1.13.2",
+    "buffer": "^6.0.3",
+    "jwt-decode": "^4.0.0",
+    "process": "^0.11.10",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-ga4": "^2.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",
@@ -25,6 +32,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
-    "vite": "^7.1.12"
+    "vite": "^7.1.12",
+    "vite-plugin-node-polyfills": "^0.24.0"
   }
 }

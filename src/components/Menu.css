@@ -1,56 +1,870 @@
-.menu-box {
-  z-index: 10;
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  overflow: hidden;
+  position: relative;
+}
+
+.menu-container::before {
+  content: '';
   position: absolute;
-  margin: 0 auto;
+  top: 0;
   left: 0;
   right: 0;
-  top: 50px;
-  background-color: white;
-  border: 1px solid black;
-  border-radius: 5px;
-  width: 300px;
-  height: 100px;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.menu-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px 16px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.republic-day-banner {
+  width: 100%;
+  max-width: 400px;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 12px 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.republic-day-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.republic-day-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.republic-day-header {
   display: flex;
   align-items: center;
+  gap: 8px;
   justify-content: center;
 }
 
-.btn {
-  padding: 10px;
-  margin: 20px;
-  height: 30px;
-  line-height: 30px;
-  background-color: transparent;
-  color: black;
-  border-radius: 5px;
-  cursor: pointer;
-  font-family: sans-serif;
-  font-size: 15px;
-  border: 2px solid deepskyblue;
+.republic-day-flag {
+  font-size: 1rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.republic-day-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.republic-day-offer-wrapper {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.republic-day-offer {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  display: block;
   text-align: center;
-  user-select: none;
 }
 
-.btn:hover {
-  background-color: deepskyblue;
-  color: white;
+.stats-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 0;
+  margin: -4px 0 0 0;
 }
 
-.btn:active {
-  transform: scale(0.95);
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
-@media (max-width: 600px) {
-  .menu-box {
-    width: 250px;
-    height: 80px;
-    top: 30px;
+.stat-item-playing {
+  position: relative;
+}
+
+.stat-value-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  line-height: 1;
+  letter-spacing: 0.5px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00ff88;
+  box-shadow: 
+    0 0 12px rgba(0, 255, 136, 1),
+    0 0 20px rgba(0, 255, 136, 0.6),
+    0 0 30px rgba(0, 255, 136, 0.3);
+  animation: pulse-dot 1s ease-in-out infinite;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.live-dot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00ff88;
+  animation: pulse-ring 1s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 
+      0 0 12px rgba(0, 255, 136, 1),
+      0 0 20px rgba(0, 255, 136, 0.6),
+      0 0 30px rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.9);
+    box-shadow: 
+      0 0 8px rgba(0, 255, 136, 0.5),
+      0 0 15px rgba(0, 255, 136, 0.3),
+      0 0 25px rgba(0, 255, 136, 0.15);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.title-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  width: 100%;
+  max-width: 500px;
+}
+
+.menu-title {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #fff 0%, #a8d8ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.title-highlight {
+  display: block;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.menu-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #b0d0ff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.voucher-image-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  width: 100%;
+  max-width: 400px;
+}
+
+.voucher-image {
+  width: 180px;
+  height: 180px;
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(255, 153, 0, 0.3);
+  border: 3px solid #ff9900;
+  object-fit: cover;
+  animation: float 3s ease-in-out infinite;
+}
+
+.voucher-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0;
+}
+
+.brand-logos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 0;
+  flex-wrap: nowrap;
+}
+
+.brand-logo {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  height: 42px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.brand-logo:hover {
+  transform: translateY(-2px);
+}
+
+.amazon-logo {
+  background: linear-gradient(135deg, #232f3e 0%, #131921 100%);
+  border: 1px solid #ff9900;
+  color: #fff;
+}
+
+.amazon-logo .logo-text {
+  background: linear-gradient(135deg, #ff9900 0%, #ffcc00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.flipkart-logo {
+  background: linear-gradient(135deg, #232f3e 0%, #131921 100%);
+  border: 1px solid #ff9f00;
+  color: #fff;
+}
+
+.flipkart-logo .logo-text {
+  background: linear-gradient(135deg, #ff9f00 0%, #ffcc00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.brand-tagline {
+  margin: 8px 0 0 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #a8d8ff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.start-btn {
+  padding: 16px 32px;
+  font-size: 1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 
+    0 8px 20px rgba(0, 255, 136, 0.4),
+    0 3px 10px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 280px;
+  margin: 0;
+}
+
+.start-btn:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 28px rgba(0, 255, 136, 0.5),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #00ff99 0%, #00dd77 100%);
+}
+
+.start-btn:active:not(.disabled) {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 18px rgba(0, 255, 136, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.start-btn.disabled {
+  background: linear-gradient(135deg, #666 0%, #444 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Tablet (768px) */
+@media (max-width: 768px) {
+  .menu-main {
+    gap: 20px;
+    padding: 20px 16px;
   }
 
-  .btn {
-    font-size: 14px;
-    padding: 8px;
-    margin: 15px;
+  .republic-day-banner {
+    max-width: 360px;
+    padding: 10px 16px;
+  }
+
+  .republic-day-header {
+    gap: 6px;
+  }
+
+  .republic-day-flag {
+    font-size: 0.9rem;
+  }
+
+  .republic-day-label {
+    font-size: 0.65rem;
+  }
+
+  .republic-day-offer-wrapper {
+    padding: 5px 10px;
+  }
+
+  .republic-day-offer {
+    font-size: 0.8rem;
+  }
+
+  .stats-section {
+    gap: 16px;
+    margin: -4px 0 0 0;
+  }
+
+  .title-section {
+    max-width: 100%;
+  }
+
+  .voucher-image-section {
+    max-width: 100%;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .stat-value-wrapper {
+    gap: 5px;
+  }
+
+  .live-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .live-dot::before {
+    width: 7px;
+    height: 7px;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+  }
+
+  .stat-divider {
+    height: 26px;
+  }
+
+  .menu-title {
+    font-size: 2rem;
+  }
+
+  .title-highlight {
+    font-size: 2.2rem;
+  }
+
+  .menu-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .voucher-image {
+    width: 160px;
+    height: 160px;
+  }
+
+  .voucher-title {
+    font-size: 1.3rem;
+  }
+
+  .brand-logo {
+    padding: 9px 14px;
+    min-width: 80px;
+    height: 38px;
+    font-size: 0.85rem;
+  }
+
+  .brand-tagline {
+    font-size: 0.85rem;
+  }
+
+  .start-btn {
+    font-size: 0.9rem;
+    padding: 14px 28px;
+    max-width: 260px;
+    margin: 0;
   }
 }
 
+/* Mobile (480px) */
+@media (max-width: 480px) {
+  .menu-container {
+    height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  .menu-main {
+    padding: 20px 16px;
+    gap: 18px;
+    justify-content: center;
+  }
+
+  .republic-day-banner {
+    max-width: 95%;
+    padding: 10px 14px;
+  }
+
+  .republic-day-header {
+    gap: 5px;
+  }
+
+  .republic-day-flag {
+    font-size: 0.85rem;
+  }
+
+  .republic-day-label {
+    font-size: 0.6rem;
+  }
+
+  .republic-day-offer-wrapper {
+    padding: 4px 8px;
+  }
+
+  .republic-day-offer {
+    font-size: 0.75rem;
+  }
+
+  .stats-section {
+    gap: 14px;
+    margin: -4px 0 0 0;
+  }
+
+  .title-section {
+    max-width: 100%;
+  }
+
+  .voucher-image-section {
+    max-width: 100%;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+
+  .stat-value-wrapper {
+    gap: 4px;
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .live-dot::before {
+    width: 6px;
+    height: 6px;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+  }
+
+  .stat-divider {
+    height: 24px;
+  }
+
+  .menu-title {
+    font-size: 1.7rem;
+  }
+
+  .title-highlight {
+    font-size: 1.9rem;
+  }
+
+  .menu-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .voucher-image-section {
+    gap: 10px;
+  }
+
+  .voucher-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 16px;
+  }
+
+  .voucher-title {
+    font-size: 1.2rem;
+  }
+
+  .brand-section {
+    gap: 12px;
+  }
+
+  .brand-logos {
+    gap: 12px;
+  }
+
+  .brand-logo {
+    padding: 8px 12px;
+    min-width: 75px;
+    height: 36px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .brand-tagline {
+    font-size: 0.8rem;
+    margin-top: 6px;
+  }
+
+  .start-btn {
+    font-size: 0.85rem;
+    padding: 14px 24px;
+    max-width: 240px;
+    border-radius: 12px;
+    margin: 0;
+  }
+}
+
+/* Small Height Screens */
+@media (max-height: 700px) {
+  .menu-main {
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .republic-day-banner {
+    max-width: 95%;
+    padding: 8px 12px;
+  }
+
+  .republic-day-header {
+    gap: 4px;
+  }
+
+  .republic-day-flag {
+    font-size: 0.75rem;
+  }
+
+  .republic-day-label {
+    font-size: 0.55rem;
+  }
+
+  .republic-day-offer-wrapper {
+    padding: 4px 8px;
+  }
+
+  .republic-day-offer {
+    font-size: 0.7rem;
+  }
+
+  .stats-section {
+    gap: 12px;
+    margin: -4px 0 0 0;
+  }
+
+  .title-section {
+    gap: 6px;
+  }
+
+  .voucher-image-section {
+    gap: 10px;
+  }
+
+  .stat-value {
+    font-size: 0.95rem;
+  }
+
+  .stat-value-wrapper {
+    gap: 4px;
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .live-dot::before {
+    width: 6px;
+    height: 6px;
+  }
+
+  .stat-label {
+    font-size: 0.6rem;
+  }
+
+  .stat-divider {
+    height: 20px;
+  }
+
+  .menu-title {
+    font-size: 1.7rem;
+  }
+
+  .title-highlight {
+    font-size: 1.9rem;
+  }
+
+  .menu-subtitle {
+    font-size: 0.75rem;
+  }
+
+  .voucher-image {
+    width: 120px;
+    height: 120px;
+  }
+
+  .voucher-title {
+    font-size: 1.1rem;
+  }
+
+  .brand-logo {
+    padding: 7px 10px;
+    height: 32px;
+    font-size: 0.75rem;
+    min-width: 70px;
+  }
+
+  .brand-tagline {
+    font-size: 0.75rem;
+  }
+
+  .start-btn {
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    max-width: 200px;
+  }
+}
+
+/* Very Small Screens */
+@media (max-width: 350px) {
+  .menu-title {
+    font-size: 1.5rem;
+  }
+
+  .title-highlight {
+    font-size: 1.7rem;
+  }
+
+  .voucher-title {
+    font-size: 1rem;
+  }
+
+  .brand-logo {
+    min-width: 65px;
+    padding: 6px 9px;
+    font-size: 0.7rem;
+  }
+
+  .start-btn {
+    max-width: 190px;
+  }
+}
+
+/* Extra Small Height Screens */
+@media (max-height: 600px) {
+  .menu-main {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .stats-section {
+    display: none; /* Hide stats on very small screens to save space */
+  }
+
+  .menu-title {
+    font-size: 1.5rem;
+  }
+
+  .title-highlight {
+    font-size: 1.7rem;
+  }
+
+  .menu-subtitle {
+    font-size: 0.7rem;
+  }
+
+  .voucher-image {
+    width: 110px;
+    height: 110px;
+  }
+
+  .voucher-title {
+    font-size: 1rem;
+  }
+
+  .brand-logo {
+    padding: 6px 8px;
+    height: 30px;
+    font-size: 0.7rem;
+    min-width: 65px;
+  }
+
+  .brand-tagline {
+    font-size: 0.7rem;
+  }
+
+  .start-btn {
+    padding: 8px 14px;
+    font-size: 0.75rem;
+    max-width: 180px;
+  }
+}
